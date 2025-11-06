@@ -1,2 +1,27 @@
+# Dependencies
 node_modules
+
+# Environment variables
+.env
+.env.local
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Backup files
+*.backup
+index.js.backup
+
+# OS files
+.DS_Store
 htop*
+
+# Editor directories
+.vscode
+.idea
+
+# Development directories
+.claude/
+Docs/
