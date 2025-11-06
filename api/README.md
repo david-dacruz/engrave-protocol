@@ -30,7 +30,7 @@ Engrave Protocol functions as the **connective tissue** between **AI Agent ecosy
 
 Together, these components enable **AI Agents to inscribe, pay, and operate across layers** with minimal friction.
 
-![Architecture Diagram](./assets/architecture.png)
+![Architecture Diagram](./src/assets/architecture.png)
 
 ---
 
