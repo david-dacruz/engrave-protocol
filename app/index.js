@@ -10,6 +10,9 @@ import fs from 'fs';
 import nacl from 'tweetnacl';
 import {decodeXPaymentResponse, withPaymentInterceptor} from 'x402-axios';
 
+// Follow this doc to make paid requests to x402 endpoints:
+// https://docs.payai.network/x402/clients/typescript/axios
+
 // -------------------------
 // 1) Load or create wallet
 // -------------------------
@@ -152,7 +155,7 @@ try {
 
 	const xpay = res.headers['x-payment-response'];
 	if (xpay) {
-		console.log('request', xpay);
+		console.log('response', xpay);
 
 		const paymentResponse = decodeXPaymentResponse(xpay);
 		console.log('Payment Details:', paymentResponse);
