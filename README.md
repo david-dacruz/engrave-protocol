@@ -24,19 +24,21 @@ There is currently **no unified, open-source infrastructure** that allows AI Age
 
 Engrave Protocol functions as the **connective tissue** between **AI Agent ecosystems** and **Bitcoin’s on-chain settlement**, using:
 
-- **x402 endpoints** for trust-minimized payments and requests  
-- **Solana MCP servers** for agent orchestration  
-- **Bitcoin Ordinals inscriptions** for data anchoring and identity proofs  
+- **x402 endpoints** for trust-minimized payments and requests
+- **Solana MCP servers** for agent orchestration
+- **Bitcoin Ordinals inscriptions** for data anchoring and identity proofs
 
 Together, these components enable **AI Agents to inscribe, pay, and operate across layers** with minimal friction.
+
+![Architecture Diagram](./assets/architecture.png)
 
 ---
 
 ## 🎯 Goals
 
-- 🧠 **Build in Public** — Transparent development and documentation  
-- 📺 **Daily Streams** — Share progress and experiments live  
-- 💾 **Open Source** — Continuous uploads to a public GitHub repository  
-- 🏆 **Hackathon Goal** — Win the official **Solana x402 Hackathon (MCP Track)**  
+- 🧠 **Build in Public** — Transparent development and documentation
+- 📺 **Daily Streams** — Share progress and experiments live
+- 💾 **Open Source** — Continuous uploads to a public GitHub repository
+- 🏆 **Hackathon Goal** — Win the official **Solana x402 Hackathon (MCP Track)**
 
 Follow us on [Twitter](https://x.com/engraveprotocol)

@@ -1,7 +1,7 @@
 // @ts-check
 import express from 'express';
-import {x402Service} from '../services/x402.service.js';
 import {agentService} from '../services/agent.service.js';
+import {x402Service} from '../services/x402.service.js';
 
 const router = express.Router();
 
@@ -58,6 +58,7 @@ const inscribeHandler = async (req, res) => {
 		console.error('Error handling inscribe endpoint:', error);
 		return res.status(500).json({
 			error: 'Internal server error',
+			// @ts-ignore
 			message: error.message,
 		});
 	}
