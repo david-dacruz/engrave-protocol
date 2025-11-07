@@ -78,7 +78,7 @@ const solanaSigner = {
 // -------------------------
 // 4) Axios + x402 setup
 // -------------------------
-const baseURL = 'http://localhost:5555';
+const baseURL = 'http://localhost:3000';
 const endpointPath = '/api/inscribe';
 const api = withPaymentInterceptor(
 	axios.create({baseURL}),

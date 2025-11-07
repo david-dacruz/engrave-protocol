@@ -1,6 +1,8 @@
 // @ts-check
 import express from 'express';
 import inscribeRoutes from './inscribe.routes.js';
+import ordinalsRoutes from './ordinals.routes.js';
+import bitcoinRoutes from './bitcoin.routes.js';
 
 const router = express.Router();
 
@@ -14,14 +16,29 @@ router.get('/health', (req, res) => {
 		status: 'healthy',
 		service: 'Engrave Protocol MCP Server',
 		timestamp: new Date().toISOString(),
+		version: '1.0.0',
+		features: {
+			bitcoinWallet: true,
+			ordinalsInscription: true,
+			mcpServer: true,
+			x402Payments: true,
+		},
+		endpoints: {
+			inscription: '/api/inscribe',
+			ordinals: '/api/ordinals/*',
+			bitcoin: '/api/bitcoin/*',
+			health: '/health',
+		},
 	});
 });
 
 // Mount inscription routes
 router.use('/api', inscribeRoutes);
 
-// Add more route modules here as the project grows
-// router.use('/api/ordinals', ordinalsRoutes);
-// router.use('/api/bitcoin', bitcoinRoutes);
+// Mount ordinals routes
+router.use('/api/ordinals', ordinalsRoutes);
+
+// Mount bitcoin routes
+router.use('/api/bitcoin', bitcoinRoutes);
 
 export default router;

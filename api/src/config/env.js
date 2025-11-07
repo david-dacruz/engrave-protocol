@@ -18,6 +18,12 @@ import 'dotenv/config';
  *     decimals: number,
  *   },
  * }} x402
+ * @property {{
+ *   network: string,
+ *   rpcUrl?: string,
+ *   walletSeed?: string,
+ *   ordinalsApiUrl?: string,
+ * }} bitcoin
  */
 
 /**
@@ -34,6 +40,12 @@ const requiredEnvVars = {
 // Optional environment variables with defaults
 const FACILITATOR_URL = process.env.FACILITATOR_URL || 'https://facilitator.payai.network';
 const X402_NETWORK = process.env.X402_NETWORK || 'solana-devnet';
+
+// Bitcoin configuration
+const BITCOIN_NETWORK = process.env.BITCOIN_NETWORK || 'testnet';
+const BITCOIN_RPC_URL = process.env.BITCOIN_RPC_URL;
+const BITCOIN_WALLET_SEED = process.env.BITCOIN_WALLET_SEED;
+const ORDINALS_API_URL = process.env.ORDINALS_API_URL;
 
 // Validate all required environment variables
 for (const [key, value] of Object.entries(requiredEnvVars)) {
@@ -65,6 +77,12 @@ try {
 	process.exit(1);
 }
 
+// Validate Bitcoin network
+if (!['testnet', 'mainnet'].includes(BITCOIN_NETWORK)) {
+	console.error('❌ Invalid BITCOIN_NETWORK: must be "testnet" or "mainnet"');
+	process.exit(1);
+}
+
 // Export validated configuration
 /** @type {Config} */
 export const config = {
@@ -83,5 +101,11 @@ export const config = {
 			address: '4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU',
 			decimals: 6,
 		},
+	},
+	bitcoin: {
+		network: BITCOIN_NETWORK,
+		rpcUrl: BITCOIN_RPC_URL,
+		walletSeed: BITCOIN_WALLET_SEED,
+		ordinalsApiUrl: ORDINALS_API_URL,
 	},
 };
