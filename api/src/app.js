@@ -1,6 +1,6 @@
 // @ts-check
 import express from 'express';
-import {apiReference} from '@scalar/express-api-reference';
+import redoc from 'redoc-express';
 import {corsMiddleware} from './middleware/cors.js';
 import {errorHandler, notFoundHandler} from './middleware/errorHandler.js';
 import {swaggerSpec} from './config/swagger.js';
@@ -19,17 +19,23 @@ app.use(express.urlencoded({extended: true}));
 // CORS middleware
 app.use(corsMiddleware);
 
-// Mount Scalar API Reference at /api-docs
+// Mount Redoc API documentation at /api-docs
 app.use(
 	'/api-docs',
-	apiReference({
-		spec: {
-			url: '/api-docs.json',
-		},
-		theme: 'dark',
+	redoc({
 		title: 'Engrave Protocol API',
-		defaultHttpClient: {
-			targetKey: 'javascript',
+		specUrl: '/api-docs.json',
+		redocOptions: {
+			theme: {
+				dark: {
+					primaryColor: '#1a1a1a',
+				},
+			},
+			darkMode: true,
+			hideDownloadButton: true,
+			expandResponses: '200,201,400,401,403,404,500',
+			sortPropsAlphabetically: true,
+			hideHostname: false,
 		},
 	}),
 );
