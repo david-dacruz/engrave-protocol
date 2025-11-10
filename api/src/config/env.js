@@ -24,6 +24,10 @@ import 'dotenv/config';
  *   walletSeed?: string,
  *   ordinalsApiUrl?: string,
  * }} bitcoin
+ * @property {{
+ *   rateLimitRequests: number,
+ *   rateLimitWindowMs: number,
+ * }} mempool
  */
 
 /**
@@ -46,6 +50,22 @@ const BITCOIN_NETWORK = process.env.BITCOIN_NETWORK || 'testnet';
 const BITCOIN_RPC_URL = process.env.BITCOIN_RPC_URL;
 const BITCOIN_WALLET_SEED = process.env.BITCOIN_WALLET_SEED;
 const ORDINALS_API_URL = process.env.ORDINALS_API_URL;
+
+// Mempool.space rate limiting configuration
+// mempool.space free tier: ~10 requests per second
+const MEMPOOL_RATE_LIMIT_REQUESTS = Number.parseInt(process.env.MEMPOOL_RATE_LIMIT_REQUESTS || '10', 10);
+const MEMPOOL_RATE_LIMIT_WINDOW_MS = Number.parseInt(process.env.MEMPOOL_RATE_LIMIT_WINDOW_MS || '1000', 10);
+
+// Validate rate limiting configuration
+if (!Number.isSafeInteger(MEMPOOL_RATE_LIMIT_REQUESTS) || MEMPOOL_RATE_LIMIT_REQUESTS <= 0) {
+	console.error('❌ Invalid MEMPOOL_RATE_LIMIT_REQUESTS: must be a positive integer');
+	process.exit(1);
+}
+
+if (!Number.isSafeInteger(MEMPOOL_RATE_LIMIT_WINDOW_MS) || MEMPOOL_RATE_LIMIT_WINDOW_MS <= 0) {
+	console.error('❌ Invalid MEMPOOL_RATE_LIMIT_WINDOW_MS: must be a positive integer');
+	process.exit(1);
+}
 
 // Validate all required environment variables
 for (const [key, value] of Object.entries(requiredEnvVars)) {
@@ -107,5 +127,9 @@ export const config = {
 		rpcUrl: BITCOIN_RPC_URL,
 		walletSeed: BITCOIN_WALLET_SEED,
 		ordinalsApiUrl: ORDINALS_API_URL,
+	},
+	mempool: {
+		rateLimitRequests: MEMPOOL_RATE_LIMIT_REQUESTS,
+		rateLimitWindowMs: MEMPOOL_RATE_LIMIT_WINDOW_MS,
 	},
 };
