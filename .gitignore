@@ -1,79 +1,29 @@
 # Dependencies
 node_modules/
-*/node_modules/
-**/node_modules/
 
 # Environment variables
 .env
-.env.local
-.env.production
-.env.development
+.env.*
 
 # Logs
-logs
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
-coverage/
 
 # OS files
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
 
-# Editor directories and files
+# Editor
 .vscode/
 .idea/
-*.swp
-*.swo
-*~
-
-# Temporary files
-*.tmp
-*.temp
 
 # Build outputs
 dist/
 build/
-out/
-
-# Package manager files (yarn.lock should be committed if using yarn)
-yarn.lock
-
-# Development directories
-.claude/
-.gemini/
-Docs/
 
 # Wallet files (SECURITY: Never commit private keys!)
-wallet.txt
 *_wallet.json
-mcp_wallet.json
-solana_wallet.json
 *.wallet
 *.key
 *.pem
-*.keypair
 
-# Personal configuration files
-claude_desktop_config_READY.json
-settings.local.json
-
-# Test and temporary scripts
-api/test-payment.js
-api/check-balance.js
-api/check-transactions.js
-api/check-tx-details.js
+# Development
+.claude/
