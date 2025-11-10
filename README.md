@@ -1,84 +1,91 @@
 # 🪶 Engrave Protocol
 
-**The first open-source MCP Server that gives AI Agents multifaceted access to the Bitcoin Network via an x402 endpoint hosted on Solana.**
+**Pay-per-use Bitcoin mempool data for AI Agents via x402 micropayments on Solana**
+
+Built for Solana x402 Hackathon (MCP Track)
 
 ---
 
 ## 🧩 Overview
 
-**Engrave Protocol** is an **MCP (Model Context Protocol) Server** designed to bridge the gap between **AI Agents** and the **Bitcoin settlement layer**.  
-It enables agents operating on **Solana** to **transact, inscribe, and interact with Bitcoin** through standardized MCP endpoints — unlocking interoperability across the most secure and the most scalable blockchains.
+**Engrave Protocol** is an **MCP (Model Context Protocol) Server** that gives AI Agents access to Bitcoin blockchain data through **micropayment-protected APIs**.
+
+Instead of expensive monthly subscriptions, AI agents pay tiny amounts (as low as $0.01 USDC) for each query they make. Payments are instant via Solana, and the data comes from Bitcoin's mempool.
+
+**Key Innovation**: No API keys, no subscriptions, no upfront costs. Payment IS authentication.
 
 ---
 
 ## ❗ Problem Statement
 
-Most agentic activity will occur on **Solana** or **Base** due to low fees and near-instant settlement.  
-However, **Bitcoin remains the ultimate layer for data permanence and finality.**
+Traditional blockchain data APIs require:
+- **$99+/month subscriptions** (regardless of usage)
+- **API key management** (security risks)
+- **Rate limits** (even if you pay)
+- **Wasted money** if you don't use it
 
-There is currently **no unified, open-source infrastructure** that allows AI Agents to interact directly with Bitcoin’s base layer in a permissionless and composable way.
+For AI Agents with unpredictable, on-demand usage patterns, this model is broken.
 
 ---
 
 ## ⚙️ Solution
 
-Engrave Protocol functions as the **connective tissue** between **AI Agent ecosystems** and **Bitcoin’s on-chain settlement**, using:
+**True pay-as-you-go API access** powered by:
 
-- **x402 endpoints** for trust-minimized payments and requests
-- **Solana MCP servers** for agent orchestration
-- **Bitcoin Ordinals inscriptions** for data anchoring and identity proofs
+- **x402 HTTP Payment Protocol** - Payment requirements via 402 status code
+- **Solana USDC micropayments** - Instant, sub-cent transactions
+- **MCP Integration** - Seamless AI agent access via Claude, Gemini, etc.
+- **Bitcoin Mempool Data** - Real-time blockchain analytics
 
-Together, these components enable **AI Agents to inscribe, pay, and operate across layers** with minimal friction.
-
-![Architecture Diagram](./architecture.png)
-
----
-
-## 🎯 Goals
-
-- 🧠 **Build in Public** — Transparent development and documentation
-- 📺 **Daily Streams** — Share progress and experiments live
-- 💾 **Open Source** — Continuous uploads to a public GitHub repository
-- 🏆 **Hackathon Goal** — Win the official **Solana x402 Hackathon (MCP Track)**
-
-Follow us on [Twitter](https://x.com/engraveprotocol)
+```
+AI Agent asks: "What are current Bitcoin fees?"
+     ↓
+Pays $0.01 USDC on Solana (instant)
+     ↓
+Gets live mempool data
+     ↓
+AI responds with fee recommendations
+```
 
 ---
 
-## 🚀 Quick Start with MCP Clients
+## 🚀 Quick Start
 
 ### Prerequisites
 - Node.js 18+ installed
-- MCP-compatible client (Claude Desktop, Cline, etc.)
+- MCP-compatible client (Claude Desktop recommended)
 - Solana wallet with USDC on Devnet
 
-### 1. Install Dependencies
+### 1. Install & Setup
 
 ```bash
 # Clone and install
 git clone https://github.com/david-dacruz/engrave-protocol.git
-cd engrave-protocol
-npm run install:all
+cd engrave-protocol/api
+npm install
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your treasury wallet address
 ```
 
 ### 2. Start API Server
 
 ```bash
-# Terminal 1: Start the API server
 cd api
-cp .env.example .env
-# Edit .env with your configuration
 npm run dev
+
+# API starts on http://localhost:3000
+# Test health: curl http://localhost:3000/health
 ```
 
-### 3. Create MCP Server Wallet
+### 3. Create MCP Wallet
 
 ```bash
-# Terminal 2: Generate wallet for MCP server
-cd api
+# Generate wallet for MCP server (stores in api/mcp_wallet.json)
 npm run mcp:create-wallet
 
-# Fund the wallet with USDC
+# Fund wallet with USDC on Solana Devnet
 # Visit: https://faucet.circle.com
 ```
 
@@ -97,10 +104,11 @@ npm run mcp:create-wallet
       "command": "node",
       "args": ["/ABSOLUTE/PATH/TO/engrave-protocol/api/src/mcp/server.js"],
       "env": {
-        "TREASURY_WALLET_ADDRESS": "your_treasury_address",
+        "TREASURY_WALLET_ADDRESS": "your_solana_treasury_address",
         "BASE_API_URL": "http://localhost:3000",
         "MCP_WALLET_FILE": "/ABSOLUTE/PATH/TO/engrave-protocol/api/mcp_wallet.json",
-        "X402_NETWORK": "solana-devnet"
+        "X402_NETWORK": "solana-devnet",
+        "BITCOIN_NETWORK": "testnet"
       }
     }
   }
@@ -109,110 +117,125 @@ npm run mcp:create-wallet
 
 **Important**: Use absolute paths, not relative paths.
 
-### 5. Restart MCP Client & Test
+### 5. Test It!
 
-Restart Claude Desktop (or your MCP client) and try:
+Restart Claude Desktop and try:
 
 ```
-Create a Bitcoin Ordinals inscription with the text "Hello from AI"
+What are the current Bitcoin testnet fee recommendations?
 ```
 
 The MCP server will automatically:
-- Handle the x402 payment ($1.00 USDC)
-- Create the Bitcoin inscription
-- Return the inscription ID and transaction hash
-
-### 📚 Full Setup Guide
-
-For complete instructions, troubleshooting, and advanced configuration:
-
-**[→ Read the Complete MCP Setup Guide](docs/MCP_SETUP.md)**
+- Pay $0.01 USDC on Solana
+- Query the mempool API
+- Return live fee data
 
 ---
 
-## 🔧 Available MCP Tools
+## 🔧 Available MCP Tools (8 Total)
 
-| Tool | Description | Payment | Parameters |
-|------|-------------|---------|------------|
-| `inscribe_ordinal` | Create Bitcoin inscription | $1.00 USDC | content, content_type, destination_address |
-| `get_inscription_status` | Check inscription status | Free | inscription_id |
-| `list_inscriptions` | List inscriptions by address | Free | address |
-| `generate_bitcoin_address` | Generate new Bitcoin address | Free | index (optional) |
-| `validate_bitcoin_address` | Validate Bitcoin address | Free | address |
+| Tool | Description | Cost | Use Case |
+|------|-------------|------|----------|
+| `query_mempool_height` | Current block height | **FREE** | Connectivity check |
+| `query_mempool_fees` | Fee recommendations | $0.01 | Transaction planning |
+| `query_mempool_stats` | Mempool statistics | $0.01 | Congestion monitoring |
+| `query_mempool_tx_status` | TX confirmation status | $0.05 | Track confirmations |
+| `query_mempool_transaction` | Full TX details | $0.10 | Investigation |
+| `query_mempool_address` | Address info & balance | $0.10 | Balance check |
+| `query_mempool_address_txs` | Address TX history | $0.25 | Full audit |
+| `query_mempool_block` | Block data | $0.10 | Chain analysis |
+
+**All prices in USDC on Solana Devnet**
 
 ---
 
 ## 🏗️ Architecture
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│              MCP Client (Claude Desktop)                 │
-│                     Natural Language                     │
-└──────────────────────┬──────────────────────────────────┘
-                       │ stdio (MCP Protocol)
-                       ▼
-┌─────────────────────────────────────────────────────────┐
-│              MCP Server (Node.js)                        │
-│  • Manages Solana wallet                                │
-│  • Converts MCP calls → HTTP requests                   │
-│  • Handles x402 payments automatically                  │
-└──────────────────────┬──────────────────────────────────┘
-                       │ HTTP + x402 headers (USDC payment)
-                       ▼
-┌─────────────────────────────────────────────────────────┐
-│              API Server (Express.js)                     │
-│  • /api/inscribe (x402 protected)                       │
-│  • Verifies payments                                    │
-│  • Settles to treasury                                  │
-└──────────────────────┬──────────────────────────────────┘
-                       │
-                       ▼
-┌─────────────────────────────────────────────────────────┐
-│         Bitcoin Ordinals Inscription Service             │
-│  • Creates inscription transaction                       │
-│  • Broadcasts to Bitcoin network                        │
-└─────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────┐
+│  AI Agent (Claude/Gemini)              │
+│  "What are Bitcoin fees?"              │
+└──────────────┬─────────────────────────┘
+               │ MCP Protocol (stdio)
+               ▼
+┌────────────────────────────────────────┐
+│  MCP Server (Engrave Protocol)         │
+│  • Manages Solana wallet               │
+│  • Handles x402 payments                │
+│  • 8 mempool query tools                │
+└──────────────┬─────────────────────────┘
+               │ HTTP + x402-axios
+               ▼
+┌────────────────────────────────────────┐
+│  Express API (Payment Gateway)         │
+│  • Verifies payment signatures          │
+│  • Rate limiting (10 req/s)             │
+│  • Async payment settlement             │
+└──────────────┬─────────────────────────┘
+               │ Rate-limited HTTP
+               ▼
+┌────────────────────────────────────────┐
+│  Mempool.space API                     │
+│  • Bitcoin blockchain data              │
+│  • Testnet & Mainnet support            │
+└────────────────────────────────────────┘
 ```
 
-**Key Innovation**: MCP server acts as a payment bridge, converting stdio-based MCP protocol to HTTP requests with x402 micropayments on Solana.
+**Key Innovation**: Payment happens transparently between MCP server and API, user just asks questions.
 
 ---
 
 ## 💡 Example Use Cases
 
-### 1. Immortalize AI Conversations
+### 1. Trading Bot
 ```
-Store this conversation permanently on Bitcoin as a text inscription
-```
-
-### 2. Create Provable Data Anchors
-```
-Create a Bitcoin inscription with this JSON data:
-{"timestamp": "2024-11-10", "source": "Claude", "hash": "abc123"}
+Monitor mempool congestion every 30 seconds to time transactions
+Cost: $0.03/check = $87/day (if running 24/7)
+Traditional API: $300/month (whether you use it or not)
+Savings: 70-99% depending on actual usage
 ```
 
-### 3. Generate Bitcoin Addresses
+### 2. Blockchain Explorer
 ```
-Generate 5 Bitcoin testnet addresses for our inscription project
+User queries their transaction → pay $0.10 → return data
+Explorer charges user $0.12 (20% markup)
+Zero fixed costs, instant profit margin
 ```
 
-### 4. Verify Inscription Status
+### 3. Research & Analysis
 ```
-Check the status of inscription ID abc123def456
+Academic studying Bitcoin patterns sporadically
+Heavy analysis: $50/week when active
+Quiet periods: $0/week
+Traditional API: $99/month ALWAYS
+Savings: ~$600/year
+```
+
+### 4. AI Assistant
+```
+User: "Should I send my Bitcoin transaction now?"
+Agent: Checks fees ($0.01) + mempool stats ($0.01)
+Agent: "Fees are low at 3 sat/vB, good time to send!"
+Total cost: $0.02 per question
 ```
 
 ---
 
-## 📊 Cost Structure
+## 📊 Cost Comparison
 
-| Operation | Network | Cost |
-|-----------|---------|------|
-| Bitcoin Inscription | Solana (x402) | $1.00 USDC |
-| x402 Transaction | Solana | ~0.000005 SOL |
-| Status Checks | Free | $0.00 |
-| Address Generation | Free | $0.00 |
+### Traditional API (mempool.space equivalent)
+- **Monthly subscription**: $99/month
+- **Annual cost**: $1,188/year
+- **Cost per query** (30/month): $3.30
+- **Wasted if unused**: $99/month
 
-**Note**: Currently using Bitcoin testnet and Solana devnet for development.
+### Engrave Protocol
+- **Pay per query**: $0.01 - $0.25
+- **Annual cost**: Only what you use
+- **Cost per query**: $0.01 - $0.25
+- **Wasted if unused**: $0.00
+
+**Break-even point**: ~400 queries/month
 
 ---
 
@@ -224,46 +247,69 @@ npm run dev              # Start API with hot reload
 npm run start            # Start API in production mode
 
 # MCP Server
-npm run mcp:start        # Start MCP server
-npm run mcp:dev          # Start MCP with hot reload
-npm run mcp:inspect      # Test MCP server with inspector
 npm run mcp:create-wallet # Generate new MCP wallet
+npm run mcp:inspect      # Test MCP server with inspector
 
 # Testing
-npm run test:basic       # Test Bitcoin integration
-npm run test:endpoints   # Test all API endpoints
-npm run test:app         # Test client application
+curl http://localhost:3000/health                  # Health check
+curl http://localhost:3000/api/v1/mempool/height   # Free endpoint
+curl http://localhost:3000/api/v1/mempool/fees     # Paid endpoint (returns 402)
 ```
 
 ---
 
 ## 📖 Documentation
 
-- **[MCP Setup Guide](docs/MCP_SETUP.md)** - Complete MCP client configuration
-- **[Payment Flow](docs/mcp-setup/PAYMENT_FLOW.md)** - How x402 payments work
-- **[Implementation Summary](IMPLEMENTATION_SUMMARY.md)** - Technical details
-- **[Launch Summary](LAUNCH_SUMMARY.md)** - Deployment guide
-- **[Setup Guide](SETUP.md)** - API server setup
+- **[Demo Presentation](demo/presentation.md)** - Marp slidedeck for hackathon
+- **[Demo PDF](demo/presentation.pdf)** - Exported PDF presentation
+- **[Interaction Examples](demo/interactions/)** - Real API test results
+- **[API Documentation](http://localhost:3000/api-docs)** - Redoc UI (when server running)
 
 ---
 
 ## 🔐 Security Notes
 
-- ⚠️ **Development Only**: Current configuration uses testnet/devnet
-- 🔑 **Wallet Security**: Never commit wallet files to git
+- ⚠️ **Development Only**: Currently on Bitcoin testnet + Solana devnet
+- 🔑 **Wallet Security**: Never commit `mcp_wallet.json` to git
 - 💰 **Limited Funds**: Keep minimal USDC in MCP wallet
-- 🔒 **Environment Variables**: Use env vars for production secrets
+- 🔒 **Environment Variables**: Use `.env` for sensitive config
+
+---
+
+## 🎯 Roadmap
+
+**Phase 1** (Current): Bitcoin Testnet + Solana Devnet
+- 8 mempool endpoints operational
+- x402 payment flow working
+- MCP integration complete
+
+**Phase 2** (Q1 2025): Mainnet Launch
+- Bitcoin mainnet data
+- Real USDC payments on Solana
+- Public API access
+
+**Phase 3** (Q2 2025): Expansion
+- Ethereum support
+- More blockchain APIs
+- Custom query language
+
+**Phase 4** (Q3 2025): Enterprise
+- Volume discounts
+- White-label API
+- SLA guarantees
 
 ---
 
 ## 🤝 Contributing
 
-This project is part of the **Solana x402 Hackathon (MCP Track)**.
+This project is built for the **Solana x402 Hackathon (MCP Track)**.
 
-Contributions welcome! Please:
+Contributions welcome:
 1. Fork the repository
-2. Create a feature branch
-3. Submit a pull request
+2. Create a feature branch (`git checkout -b feature/amazing`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing`)
+5. Open a Pull Request
 
 ---
 
@@ -277,10 +323,14 @@ MIT License - see [LICENSE](LICENSE) file for details
 
 - **GitHub**: https://github.com/david-dacruz/engrave-protocol
 - **Twitter**: https://x.com/engraveprotocol
-- **x402 Docs**: https://docs.payai.network/x402
+- **x402 Protocol**: https://docs.payai.network/x402
 - **MCP Protocol**: https://modelcontextprotocol.io
 - **USDC Faucet**: https://faucet.circle.com
+- **Mempool.space**: https://mempool.space
 
 ---
 
 **Built for the Solana x402 Hackathon** 🏆
+*Making blockchain data affordable for AI Agents*
+
+🪶 **Engrave Protocol** - Pay for what you use, nothing more.

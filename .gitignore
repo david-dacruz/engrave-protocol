@@ -55,6 +55,7 @@ yarn.lock
 
 # Development directories
 .claude/
+.gemini/
 Docs/
 
 # Wallet files (SECURITY: Never commit private keys!)
@@ -66,3 +67,13 @@ solana_wallet.json
 *.key
 *.pem
 *.keypair
+
+# Personal configuration files
+claude_desktop_config_READY.json
+settings.local.json
+
+# Test and temporary scripts
+api/test-payment.js
+api/check-balance.js
+api/check-transactions.js
+api/check-tx-details.js

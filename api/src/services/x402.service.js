@@ -52,7 +52,7 @@ class X402Service {
 	 * @returns {Promise<PaymentRequirements>}
 	 */
 	async createPaymentRequirements(price, resource, description = 'API Request') {
-		return await this.handler.createPaymentRequirements({
+		const params = {
 			price: {
 				amount: price.toString(),
 				asset: {
@@ -64,7 +64,19 @@ class X402Service {
 				description,
 				resource: `${config.api.baseUrl}${resource}`,
 			},
-		});
+		};
+
+		console.log('[X402] Creating payment requirements:', JSON.stringify(params, null, 2));
+		console.log('[X402] Facilitator URL:', config.x402.facilitatorUrl);
+
+		try {
+			const result = await this.handler.createPaymentRequirements(params);
+			console.log('[X402] Payment requirements created successfully');
+			return result;
+		} catch (error) {
+			console.error('[X402] Error creating payment requirements:', error);
+			throw error;
+		}
 	}
 
 	/**
@@ -85,6 +97,19 @@ class X402Service {
 	 * @returns {Promise<boolean>}
 	 */
 	async verifyPayment(paymentHeader, paymentRequirements) {
+		console.log('[X402] Payment header received (first 50 chars):', paymentHeader?.substring(0, 50));
+		console.log('[X402] Payment header length:', paymentHeader?.length);
+
+		// Verify it's valid base64
+		try {
+			const decoded = Buffer.from(paymentHeader, 'base64').toString('utf8');
+			console.log('[X402] Decoded payment (first 100 chars):', decoded.substring(0, 100));
+			const parsed = JSON.parse(decoded);
+			console.log('[X402] Parsed payment:', JSON.stringify(parsed, null, 2));
+		} catch (e) {
+			console.error('[X402] Failed to decode/parse payment header:', e.message);
+		}
+
 		return await this.handler.verifyPayment(
 			paymentHeader,
 			paymentRequirements

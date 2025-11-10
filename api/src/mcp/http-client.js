@@ -2,100 +2,247 @@
 import {
 	Connection,
 	Keypair,
+	PublicKey,
+	SystemProgram,
 	Transaction,
-	VersionedTransaction,
 	clusterApiUrl,
 } from '@solana/web3.js';
-import axios from 'axios';
-import nacl from 'tweetnacl';
-import { withPaymentInterceptor } from 'x402-axios';
+import {
+	createTransferInstruction,
+	getAssociatedTokenAddress,
+} from '@solana/spl-token';
 import { config } from '../config/env.js';
 
 /**
  * HTTP Client Factory for MCP Server
  * Creates payment-enabled HTTP clients for x402 endpoints
+ * Node.js-compatible implementation using manual x402 protocol
  */
 
 /**
- * Create Solana signer for x402 payments
- * @param {Keypair} keypair - Solana keypair for signing transactions
- * @param {Connection} connection - Solana connection
- * @returns {Object} Solana signer object for x402-axios
+ * Create wallet adapter for x402-solana from Keypair
+ * @param {Keypair} keypair - Solana keypair
+ * @returns {Object} WalletAdapter interface
  */
-export function createSolanaSigner(keypair, connection) {
+export function createWalletAdapter(keypair) {
 	return {
-		type: 'solana',
-		network: config.x402.network,
-
-		getAddress: async () => keypair.publicKey.toBase58(),
-
-		sendTransaction: async (txData) => {
-			const bytes = Buffer.from(txData.payload, 'base64');
-			let sig;
-
-			try {
-				// Try as VersionedTransaction first
-				const vtx = VersionedTransaction.deserialize(bytes);
-				vtx.sign([keypair]);
-				sig = await connection.sendTransaction(vtx);
-			} catch {
-				// Fallback to legacy Transaction
-				const ltx = Transaction.from(bytes);
-				sig = await connection.sendTransaction(ltx, [keypair]);
-			}
-
-			// Wait for confirmation
-			await connection.confirmTransaction(sig, 'confirmed');
-			return { hash: sig };
-		},
-
-		signMessage: async (message) => {
-			const msgBytes =
-				typeof message === 'string' ? Buffer.from(message) : message;
-			const signature = nacl.sign.detached(msgBytes, keypair.secretKey);
-			return Buffer.from(signature).toString('base64');
+		publicKey: keypair.publicKey,
+		signTransaction: async (tx) => {
+			tx.sign([keypair]);
+			return tx;
 		},
 	};
+}
+
+/**
+ * Create Solana signer for x402 payments (for test compatibility)
+ * @param {Keypair} keypair - Solana keypair for signing transactions
+ * @param {Connection} connection - Solana connection (unused but kept for API compatibility)
+ * @returns {Object} Wallet adapter
+ */
+export function createSolanaSigner(keypair, connection) {
+	return createWalletAdapter(keypair);
+}
+
+/**
+ * Build Solana payment transaction from x402 requirements
+ * @param {Object} paymentRequirements - Payment requirements from 402 response
+ * @param {Keypair} keypair - Payer keypair
+ * @param {Connection} connection - Solana connection
+ * @returns {Promise<Transaction>} Signed transaction
+ */
+async function buildPaymentTransaction(
+	paymentRequirements,
+	keypair,
+	connection
+) {
+	const payTo = new PublicKey(paymentRequirements.payTo);
+	const asset = new PublicKey(paymentRequirements.asset);
+	const amount = BigInt(paymentRequirements.maxAmountRequired);
+
+	// Get or create associated token accounts
+	const fromAta = await getAssociatedTokenAddress(asset, keypair.publicKey);
+	const toAta = await getAssociatedTokenAddress(asset, payTo);
+
+	// Create transfer instruction
+	const transferIx = createTransferInstruction(
+		fromAta,
+		toAta,
+		keypair.publicKey,
+		amount
+	);
+
+	// Build transaction
+	const { blockhash, lastValidBlockHeight } =
+		await connection.getLatestBlockhash();
+	const tx = new Transaction();
+	tx.recentBlockhash = blockhash;
+	tx.lastValidBlockHeight = lastValidBlockHeight;
+	tx.feePayer = keypair.publicKey;
+
+	// Add fee payer instruction if specified
+	if (paymentRequirements.extra?.feePayer) {
+		const feePayer = new PublicKey(paymentRequirements.extra.feePayer);
+		const feePayerIx = SystemProgram.transfer({
+			fromPubkey: keypair.publicKey,
+			toPubkey: feePayer,
+			lamports: 5000, // Minimal SOL for tx fee
+		});
+		tx.add(feePayerIx);
+	}
+
+	tx.add(transferIx);
+
+	// Sign transaction
+	tx.sign(keypair);
+
+	return tx;
 }
 
 /**
  * Create payment-enabled HTTP client for MCP server
  * @param {Keypair} keypair - Solana keypair for payments
  * @param {string} [baseURL] - Base URL for API (defaults to config)
- * @returns {Object} Axios instance with x402 payment interceptor
+ * @returns {Object} Payment-enabled client with fetch API
  */
 export function createPaymentEnabledClient(keypair, baseURL) {
 	const apiBaseURL = baseURL || config.api.baseUrl;
-
-	// Create Solana connection
-	const connection = new Connection(
-		clusterApiUrl('devnet'),
-		'confirmed'
-	);
-
-	// Create Solana signer
-	const solanaSigner = createSolanaSigner(keypair, connection);
-
-	// Create axios client with x402 interceptor
-	const client = withPaymentInterceptor(
-		axios.create({ baseURL: apiBaseURL }),
-		solanaSigner,
-		(response) => response.data,
-		{ defaultNetwork: config.x402.network }
-	);
+	const connection = new Connection(clusterApiUrl('devnet'), 'confirmed');
 
 	console.log('[HTTP Client] Created payment-enabled client');
 	console.log('[HTTP Client] Base URL:', apiBaseURL);
 	console.log('[HTTP Client] Wallet:', keypair.publicKey.toBase58());
 	console.log('[HTTP Client] Network:', config.x402.network);
 
-	return client;
+	/**
+	 * Make a fetch request with automatic x402 payment handling
+	 * @param {string} url - Full URL
+	 * @param {Object} [options] - Fetch options
+	 * @returns {Promise<Response>} Fetch response
+	 */
+	async function paymentFetch(url, options = {}) {
+		// Make initial request
+		let response = await fetch(url, options);
+
+		// If not 402, return as-is
+		if (response.status !== 402) {
+			return response;
+		}
+
+		console.log('[HTTP Client] Received 402, processing payment...');
+
+		// Parse payment requirements
+		const x402Response = await response.json();
+		const paymentRequirements = x402Response.accepts?.[0];
+
+		if (!paymentRequirements) {
+			throw new Error('No payment requirements found in 402 response');
+		}
+
+		// Build and sign payment transaction
+		const tx = await buildPaymentTransaction(
+			paymentRequirements,
+			keypair,
+			connection
+		);
+
+		// Serialize transaction
+		const serializedTx = tx.serialize().toString('base64');
+
+		// Create payment payload object
+		const paymentPayload = {
+			x402Version: x402Response.x402Version || 1,
+			network: paymentRequirements.network,
+			payload: serializedTx,
+			scheme: 'exact',
+		};
+
+		// Encode payment payload as base64-encoded JSON (as expected by x402-solana)
+		const paymentHeader = Buffer.from(
+			JSON.stringify(paymentPayload),
+			'utf8'
+		).toString('base64');
+
+		console.log('[HTTP Client] Payment transaction created and signed');
+
+		// Retry with payment
+		const newOptions = {
+			...options,
+			headers: {
+				...(options.headers || {}),
+				'X-PAYMENT': paymentHeader,
+				'Access-Control-Expose-Headers': 'X-PAYMENT-RESPONSE',
+			},
+		};
+
+		response = await fetch(url, newOptions);
+
+		if (response.ok) {
+			console.log('[HTTP Client] ✅ Payment successful');
+		}
+
+		return response;
+	}
+
+	// Return client with baseURL for convenience
+	return {
+		baseURL: apiBaseURL,
+		wallet: keypair.publicKey.toBase58(),
+
+		/**
+		 * Make a GET request with automatic x402 payment handling
+		 * @param {string} endpoint - Endpoint path
+		 * @param {Object} [options] - Fetch options
+		 * @returns {Promise<Object>} Response data
+		 */
+		async get(endpoint, options = {}) {
+			const url = `${apiBaseURL}${endpoint}`;
+			const response = await paymentFetch(url, {
+				method: 'GET',
+				...options,
+			});
+
+			if (!response.ok) {
+				const error = await response.text();
+				throw new Error(`HTTP ${response.status}: ${error}`);
+			}
+
+			return response.json();
+		},
+
+		/**
+		 * Make a POST request with automatic x402 payment handling
+		 * @param {string} endpoint - Endpoint path
+		 * @param {Object} body - Request body
+		 * @param {Object} [options] - Fetch options
+		 * @returns {Promise<Object>} Response data
+		 */
+		async post(endpoint, body, options = {}) {
+			const url = `${apiBaseURL}${endpoint}`;
+			const response = await paymentFetch(url, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					...options.headers,
+				},
+				body: JSON.stringify(body),
+				...options,
+			});
+
+			if (!response.ok) {
+				const error = await response.text();
+				throw new Error(`HTTP ${response.status}: ${error}`);
+			}
+
+			return response.json();
+		},
+	};
 }
 
 /**
  * Make a paid request to an x402 endpoint
- * @param {Object} client - Payment-enabled axios client
- * @param {string} endpoint - Endpoint path (e.g., '/api/inscribe')
+ * @param {Object} client - Payment-enabled client from createPaymentEnabledClient
+ * @param {string} endpoint - Endpoint path (e.g., '/api/v1/mempool/fees')
  * @param {Object} [params] - Query parameters
  * @returns {Promise<Object>} Response data
  */
@@ -104,24 +251,19 @@ export async function makePaidRequest(client, endpoint, params = {}) {
 		console.log('[HTTP Client] Making paid request to:', endpoint);
 		console.log('[HTTP Client] Parameters:', params);
 
-		const response = await client.get(endpoint, { params });
+		// Build query string if params provided
+		let url = endpoint;
+		if (Object.keys(params).length > 0) {
+			const query = new URLSearchParams(params).toString();
+			url += `?${query}`;
+		}
+
+		const data = await client.get(url);
 
 		console.log('[HTTP Client] ✅ Request successful');
-		return response;
+		return data;
 	} catch (error) {
 		console.error('[HTTP Client] ❌ Request failed:', error.message);
-
-		// Extract useful error information
-		if (error.response) {
-			throw new Error(
-				`HTTP ${error.response.status}: ${
-					error.response.data?.error || error.response.data?.message || 'Unknown error'
-				}`
-			);
-		} else if (error.request) {
-			throw new Error('No response received from server');
-		} else {
-			throw error;
-		}
+		throw error;
 	}
 }
