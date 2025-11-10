@@ -13,6 +13,7 @@ import {
 import { loadWallet, getWalletAddress } from './wallet-utils.js';
 import { createPaymentEnabledClient, makePaidRequest } from './http-client.js';
 import { parseHttpError } from './errors.js';
+import { config } from '../config/env.js';
 
 /**
  * Engrave Protocol MCP Server - Mempool x402 Edition
@@ -96,10 +97,51 @@ class EngraveProtocolMCPServer {
             // Create payment-enabled HTTP client for mempool queries
             this.httpClient = createPaymentEnabledClient(this.keypair);
             console.log('[MCP Server] HTTP client ready for x402 payments (mempool.space queries)');
+
+            // Validate API connectivity on startup
+            this.validateApiConnectivity();
         } catch (error) {
             console.error('[MCP Server] Failed to initialize payment client:', error.message);
             console.error('[MCP Server] MCP server will start but paid endpoints will fail');
             console.error('[MCP Server] Tip: Set MCP_WALLET_SECRET_KEY or MCP_WALLET_FILE environment variable');
+        }
+    }
+
+    /**
+     * Validate API connectivity and configuration
+     * @private
+     */
+    async validateApiConnectivity() {
+        try {
+            console.log('[MCP Server] Validating API connectivity...');
+            console.log('[MCP Server] Target API URL:', config.api.baseUrl);
+
+            const response = await fetch(`${config.api.baseUrl}/health`, {
+                method: 'GET',
+                headers: { 'Accept': 'application/json' },
+            });
+
+            if (!response.ok) {
+                console.warn(`[MCP Server] ⚠️  API health check failed: HTTP ${response.status}`);
+                console.warn('[MCP Server] The API server may not be running or accessible');
+                return;
+            }
+
+            const health = await response.json();
+            console.log('[MCP Server] ✅ API connectivity validated');
+            console.log('[MCP Server] API Version:', health.version);
+            console.log('[MCP Server] Mempool Bridge:', health.features?.mempoolBridge ? 'Available' : 'Not Available');
+
+            // Verify versioned endpoints are available
+            if (health.endpoints?.v1?.mempool) {
+                console.log('[MCP Server] ✅ Production mempool endpoints:', health.endpoints.v1.mempool);
+            } else {
+                console.warn('[MCP Server] ⚠️  Production mempool endpoints not found in health check');
+            }
+        } catch (error) {
+            console.error('[MCP Server] ❌ API connectivity validation failed:', error.message);
+            console.error('[MCP Server] Ensure the API server is running at:', config.api.baseUrl);
+            console.error('[MCP Server] MCP server will continue but requests will fail');
         }
     }
 
@@ -341,7 +383,7 @@ class EngraveProtocolMCPServer {
 
             const result = await makePaidRequest(
                 this.httpClient,
-                `/api/mempool/address/${args.address}`,
+                `/api/v1/mempool/address/${args.address}`,
                 {}
             );
 
@@ -389,7 +431,7 @@ class EngraveProtocolMCPServer {
 
             const result = await makePaidRequest(
                 this.httpClient,
-                `/api/mempool/address/${args.address}/txs`,
+                `/api/v1/mempool/address/${args.address}/txs`,
                 {}
             );
 
@@ -438,7 +480,7 @@ class EngraveProtocolMCPServer {
 
             const result = await makePaidRequest(
                 this.httpClient,
-                `/api/mempool/tx/${args.txid}`,
+                `/api/v1/mempool/tx/${args.txid}`,
                 {}
             );
 
@@ -486,7 +528,7 @@ class EngraveProtocolMCPServer {
 
             const result = await makePaidRequest(
                 this.httpClient,
-                `/api/mempool/tx/${args.txid}/status`,
+                `/api/v1/mempool/tx/${args.txid}/status`,
                 {}
             );
 
@@ -534,7 +576,7 @@ class EngraveProtocolMCPServer {
 
             const result = await makePaidRequest(
                 this.httpClient,
-                `/api/mempool/block/${args.block_hash}`,
+                `/api/v1/mempool/block/${args.block_hash}`,
                 {}
             );
 
@@ -583,7 +625,7 @@ class EngraveProtocolMCPServer {
 
             const result = await makePaidRequest(
                 this.httpClient,
-                `/api/mempool/fees/${interval}`,
+                `/api/v1/mempool/fees/${interval}`,
                 {}
             );
 
@@ -633,7 +675,7 @@ class EngraveProtocolMCPServer {
 
             const result = await makePaidRequest(
                 this.httpClient,
-                '/api/mempool/stats',
+                '/api/v1/mempool/stats',
                 {}
             );
 
@@ -672,15 +714,12 @@ class EngraveProtocolMCPServer {
         try {
             console.log('[MCP Server] Querying current block height');
 
-            // This endpoint is free, so we can call it directly without the payment client
-            const result = await fetch('https://mempool.space/api/blocks/tip/height')
-                .then(res => res.json())
-                .catch(error => {
-                    throw new McpError(
-                        ErrorCode.InternalError,
-                        `Failed to fetch block height: ${error.message}`
-                    );
-                });
+            // FREE endpoint - call local API for consistency and monitoring
+            const response = await fetch(`${config.api.baseUrl}/api/v1/mempool/height`);
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            const result = await response.json();
 
             return {
                 content: [
@@ -688,10 +727,11 @@ class EngraveProtocolMCPServer {
                         type: 'text',
                         text: JSON.stringify({
                             success: true,
-                            height: result,
+                            height: result.height,
+                            network: result.network,
                             payment: {
                                 amount: 'FREE',
-                                method: 'public_api',
+                                method: 'local_api',
                                 status: 'none',
                             },
                         }, null, 2),
@@ -700,7 +740,7 @@ class EngraveProtocolMCPServer {
             };
         } catch (error) {
             console.error('[MCP Server] Height query failed:', error.message);
-            const mcpError = parseHttpError(error, '/api/mempool/height');
+            const mcpError = parseHttpError(error, '/api/v1/mempool/height');
             throw mcpError;
         }
     }

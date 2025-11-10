@@ -496,8 +496,8 @@ router.get('/block/:hash',
  *               $ref: '#/components/schemas/Error'
  */
 /**
- * GET /api/mempool/fees
- * Get recommended fee rates
+ * GET /api/mempool/fees and /api/mempool/fees/:interval
+ * Get recommended fee rates (interval parameter is accepted but not used by mempool.space API)
  * x402 protected - configurable pricing (micropayment!)
  */
 router.get('/fees',
@@ -515,6 +515,31 @@ router.get('/fees',
 
 		return res.json({
 			success: true,
+			fees: result.data,
+			network: mempoolService.network,
+			unit: 'sat/vB',
+		});
+	}
+);
+
+// Also accept optional interval parameter for API compatibility
+router.get('/fees/:interval',
+	verifyPayment(getPrice('mempool', 'fees'), '/api/mempool/fees/:interval', 'Bitcoin Fee Estimation'),
+	settlePayment,
+	async (req, res) => {
+		// Note: mempool.space API doesn't use interval param, but we accept it for API compatibility
+		const result = await mempoolService.getRecommendedFees();
+
+		if (!result.success) {
+			return res.status(result.statusCode || 500).json({
+				error: 'Query failed',
+				message: result.error,
+			});
+		}
+
+		return res.json({
+			success: true,
+			interval: req.params.interval || 'current',
 			fees: result.data,
 			network: mempoolService.network,
 			unit: 'sat/vB',
