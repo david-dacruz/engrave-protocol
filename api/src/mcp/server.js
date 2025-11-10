@@ -7,29 +7,57 @@ import {
   ListToolsRequestSchema,
   McpError,
 } from '@modelcontextprotocol/sdk/types.js';
-import { agentService } from '../services/agent.service.js';
-import { bitcoinService } from '../services/bitcoin.service.js';
+// DEPRECATED: Ordinals and Bitcoin address generation services removed
+// import { agentService } from '../services/agent.service.js';
+// import { bitcoinService } from '../services/bitcoin.service.js';
+import { loadWallet, getWalletAddress } from './wallet-utils.js';
+import { createPaymentEnabledClient, makePaidRequest } from './http-client.js';
+import { parseHttpError } from './errors.js';
 
 /**
- * Engrave Protocol MCP Server
- * Provides Bitcoin Ordinals inscription tools for AI agents
+ * Engrave Protocol MCP Server - Mempool x402 Edition
+ * Provides production-ready mempool.space queries with x402 Solana payments
+ * Focus: Bitcoin blockchain data access via micropayments on Solana
  */
 
 /**
- * @typedef {Object} InscribeOrdinalArgs
- * @property {string} content - Content to inscribe
- * @property {string} [content_type] - MIME type (default: text/plain)
- * @property {string} [destination_address] - Bitcoin address for inscription
+ * @typedef {Object} QueryMempoolAddressArgs
+ * @property {string} address - Bitcoin address to query
  */
 
 /**
- * @typedef {Object} GetInscriptionStatusArgs
- * @property {string} inscription_id - Inscription ID to check
+ * @typedef {Object} QueryMempoolAddressTxsArgs
+ * @property {string} address - Bitcoin address to get transactions for
  */
 
 /**
- * @typedef {Object} ListInscriptionsArgs
- * @property {string} address - Bitcoin address to list inscriptions for
+ * @typedef {Object} QueryMempoolTransactionArgs
+ * @property {string} txid - Transaction ID to query
+ */
+
+/**
+ * @typedef {Object} QueryMempoolTxStatusArgs
+ * @property {string} txid - Transaction ID to get status for
+ */
+
+/**
+ * @typedef {Object} QueryMempoolBlockArgs
+ * @property {string} block_hash - Block hash or block height to query
+ */
+
+/**
+ * @typedef {Object} QueryMempoolFeesArgs
+ * @property {string} [time_interval] - Time interval (1h, 24h, default: current)
+ */
+
+/**
+ * @typedef {Object} QueryMempoolStatsArgs
+ * (No parameters - returns current mempool statistics)
+ */
+
+/**
+ * @typedef {Object} QueryMempoolHeightArgs
+ * (No parameters - returns current block height, FREE endpoint)
  */
 
 class EngraveProtocolMCPServer {
@@ -46,8 +74,33 @@ class EngraveProtocolMCPServer {
             }
         );
 
+        // Initialize wallet and HTTP client for x402 payments
+        this.keypair = null;
+        this.httpClient = null;
+        this.initializePaymentClient();
+
         this.setupToolHandlers();
         this.setupErrorHandling();
+    }
+
+    /**
+     * Initialize payment-enabled HTTP client for x402
+     * @private
+     */
+    initializePaymentClient() {
+        try {
+            // Load Solana wallet for MCP server x402 payments
+            this.keypair = loadWallet();
+            console.log('[MCP Server] Wallet initialized:', getWalletAddress(this.keypair));
+
+            // Create payment-enabled HTTP client for mempool queries
+            this.httpClient = createPaymentEnabledClient(this.keypair);
+            console.log('[MCP Server] HTTP client ready for x402 payments (mempool.space queries)');
+        } catch (error) {
+            console.error('[MCP Server] Failed to initialize payment client:', error.message);
+            console.error('[MCP Server] MCP server will start but paid endpoints will fail');
+            console.error('[MCP Server] Tip: Set MCP_WALLET_SECRET_KEY or MCP_WALLET_FILE environment variable');
+        }
     }
 
     /**
@@ -55,124 +108,145 @@ class EngraveProtocolMCPServer {
      * @private
      */
     setupToolHandlers() {
-        // List available tools
+        // List available tools - MEMPOOL ONLY
         this.server.setRequestHandler(ListToolsRequestSchema, async () => {
             return {
                 tools: [
                     {
-                        name: 'inscribe_ordinal',
-                        description: 'Create a Bitcoin Ordinals inscription with paid x402 endpoint',
-                        inputSchema: {
-                            type: 'object',
-                            properties: {
-                                content: {
-                                    type: 'string',
-                                    description: 'Content to inscribe on Bitcoin (max 400KB)',
-                                },
-                                content_type: {
-                                    type: 'string',
-                                    description: 'MIME type of the content (default: text/plain)',
-                                    enum: [
-                                        'text/plain',
-                                        'text/html',
-                                        'text/css',
-                                        'text/javascript',
-                                        'application/json',
-                                        'image/png',
-                                        'image/jpeg',
-                                        'image/gif',
-                                        'image/svg+xml',
-                                        'image/webp'
-                                    ],
-                                },
-                                destination_address: {
-                                    type: 'string',
-                                    description: 'Bitcoin address to receive the inscription (optional)',
-                                },
-                            },
-                            required: ['content'],
-                        },
-                    },
-                    {
-                        name: 'get_inscription_status',
-                        description: 'Get the status of a Bitcoin Ordinals inscription',
-                        inputSchema: {
-                            type: 'object',
-                            properties: {
-                                inscription_id: {
-                                    type: 'string',
-                                    description: 'The inscription ID to check status for',
-                                },
-                            },
-                            required: ['inscription_id'],
-                        },
-                    },
-                    {
-                        name: 'list_inscriptions',
-                        description: 'List Bitcoin Ordinals inscriptions for a given address',
+                        name: 'query_mempool_address',
+                        description: 'Get detailed information about a Bitcoin address from mempool.space (x402 protected - ~$0.01 USDC)',
                         inputSchema: {
                             type: 'object',
                             properties: {
                                 address: {
                                     type: 'string',
-                                    description: 'Bitcoin address to list inscriptions for',
+                                    description: 'Bitcoin address (P2PKH, P2SH, or Segwit)',
                                 },
                             },
                             required: ['address'],
                         },
                     },
                     {
-                        name: 'generate_bitcoin_address',
-                        description: 'Generate a new Bitcoin address for inscriptions',
+                        name: 'query_mempool_address_txs',
+                        description: 'Get transaction history for a Bitcoin address (x402 protected - ~$0.01 USDC)',
                         inputSchema: {
                             type: 'object',
                             properties: {
-                                index: {
-                                    type: 'number',
-                                    description: 'Derivation index for HD wallet (default: 0)',
+                                address: {
+                                    type: 'string',
+                                    description: 'Bitcoin address to query transactions for',
+                                },
+                            },
+                            required: ['address'],
+                        },
+                    },
+                    {
+                        name: 'query_mempool_transaction',
+                        description: 'Get detailed transaction information from mempool.space (x402 protected - ~$0.01 USDC)',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                txid: {
+                                    type: 'string',
+                                    description: 'Transaction ID (TXID) to query',
+                                },
+                            },
+                            required: ['txid'],
+                        },
+                    },
+                    {
+                        name: 'query_mempool_tx_status',
+                        description: 'Get transaction status and confirmation info (x402 protected - ~$0.01 USDC)',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                txid: {
+                                    type: 'string',
+                                    description: 'Transaction ID (TXID) to check status',
+                                },
+                            },
+                            required: ['txid'],
+                        },
+                    },
+                    {
+                        name: 'query_mempool_block',
+                        description: 'Get block information and transactions (x402 protected - ~$0.01 USDC)',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                block_hash: {
+                                    type: 'string',
+                                    description: 'Block hash or height to query',
+                                },
+                            },
+                            required: ['block_hash'],
+                        },
+                    },
+                    {
+                        name: 'query_mempool_fees',
+                        description: 'Get Bitcoin fee estimates for next block/1h/24h (x402 protected micropayment - $0.001 USDC)',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {
+                                time_interval: {
+                                    type: 'string',
+                                    description: 'Time interval: "next" (default), "1h", "24h"',
                                 },
                             },
                             required: [],
                         },
                     },
                     {
-                        name: 'validate_bitcoin_address',
-                        description: 'Validate a Bitcoin address',
+                        name: 'query_mempool_stats',
+                        description: 'Get current mempool statistics (x402 protected micropayment - $0.001 USDC)',
                         inputSchema: {
                             type: 'object',
-                            properties: {
-                                address: {
-                                    type: 'string',
-                                    description: 'Bitcoin address to validate',
-                                },
-                            },
-                            required: ['address'],
+                            properties: {},
+                            required: [],
+                        },
+                    },
+                    {
+                        name: 'query_mempool_height',
+                        description: 'Get current Bitcoin block height (FREE - no payment required)',
+                        inputSchema: {
+                            type: 'object',
+                            properties: {},
+                            required: [],
                         },
                     },
                 ],
             };
         });
 
-        // Handle tool calls
+        // Handle tool calls - MEMPOOL ONLY
         this.server.setRequestHandler(CallToolRequestSchema, async (request) => {
             const { name, arguments: args } = request.params;
 
             try {
                 switch (name) {
-                    case 'inscribe_ordinal':
-                        return await this.handleInscribeOrdinal(/** @type {InscribeOrdinalArgs} */ (args));
+                    case 'query_mempool_address':
+                        return await this.handleQueryMempoolAddress(/** @type {QueryMempoolAddressArgs} */ (args));
 
-                    case 'get_inscription_status':
-                        return await this.handleGetInscriptionStatus(/** @type {GetInscriptionStatusArgs} */ (args));
+                    case 'query_mempool_address_txs':
+                        return await this.handleQueryMempoolAddressTxs(/** @type {QueryMempoolAddressTxsArgs} */ (args));
 
-                    case 'list_inscriptions':
-                        return await this.handleListInscriptions(/** @type {ListInscriptionsArgs} */ (args));
+                    case 'query_mempool_transaction':
+                        return await this.handleQueryMempoolTransaction(/** @type {QueryMempoolTransactionArgs} */ (args));
 
-                    case 'generate_bitcoin_address':
-                        return await this.handleGenerateBitcoinAddress(args);
+                    case 'query_mempool_tx_status':
+                        return await this.handleQueryMempoolTxStatus(/** @type {QueryMempoolTxStatusArgs} */ (args));
 
-                    case 'validate_bitcoin_address':
-                        return await this.handleValidateBitcoinAddress(args);
+                    case 'query_mempool_block':
+                        return await this.handleQueryMempoolBlock(/** @type {QueryMempoolBlockArgs} */ (args));
+
+                    case 'query_mempool_fees':
+                        return await this.handleQueryMempoolFees(/** @type {QueryMempoolFeesArgs} */ (args));
+
+                    case 'query_mempool_stats':
+                        return await this.handleQueryMempoolStats(/** @type {QueryMempoolStatsArgs} */ (args));
+
+                    case 'query_mempool_height':
+                        return await this.handleQueryMempoolHeight(/** @type {QueryMempoolHeightArgs} */ (args));
 
                     default:
                         throw new McpError(
@@ -193,141 +267,442 @@ class EngraveProtocolMCPServer {
     }
 
     /**
-     * Handle inscribe_ordinal tool call
-     * @param {InscribeOrdinalArgs} args
-     * @returns {Promise<Object>}
+     * DEPRECATED: inscribe_ordinal - Removed, use mempool query tools instead
      * @private
      */
-    async handleInscribeOrdinal(args) {
-        const requestBody = {
-            content: args.content,
-            contentType: args.content_type,
-            destinationAddress: args.destination_address,
-        };
-
-        const result = await agentService.processInscriptionRequest(requestBody);
-
-        return {
-            content: [
-                {
-                    type: 'text',
-                    text: JSON.stringify({
-                        success: result.success,
-                        message: result.message,
-                        inscription: result.inscription,
-                        note: 'This endpoint requires x402 payment of $1.00 USDC. The inscription creation is currently in mock mode for development.',
-                    }, null, 2),
-                },
-            ],
-        };
-    }
+    // async handleInscribeOrdinal(args) {
+    //     throw new McpError(
+    //         ErrorCode.MethodNotFound,
+    //         'inscribe_ordinal is deprecated. This MCP server now focuses on mempool.space queries with x402 Solana payments.'
+    //     );
+    // }
 
     /**
-     * Handle get_inscription_status tool call
-     * @param {GetInscriptionStatusArgs} args
-     * @returns {Promise<Object>}
+     * DEPRECATED: get_inscription_status - Removed, use mempool query tools instead
      * @private
      */
-    async handleGetInscriptionStatus(args) {
-        const status = await agentService.getInscriptionStatus(args.inscription_id);
-
-        return {
-            content: [
-                {
-                    type: 'text',
-                    text: JSON.stringify(status, null, 2),
-                },
-            ],
-        };
-    }
+    // async handleGetInscriptionStatus(args) {
+    //     throw new McpError(
+    //         ErrorCode.MethodNotFound,
+    //         'get_inscription_status is deprecated. This MCP server now focuses on mempool.space queries with x402 Solana payments.'
+    //     );
+    // }
 
     /**
-     * Handle list_inscriptions tool call
-     * @param {ListInscriptionsArgs} args
+     * DEPRECATED: list_inscriptions - Removed, use mempool query tools instead
+     * @private
+     */
+    // async handleListInscriptions(args) {
+    //     throw new McpError(
+    //         ErrorCode.MethodNotFound,
+    //         'list_inscriptions is deprecated. This MCP server now focuses on mempool.space queries with x402 Solana payments.'
+    //     );
+    // }
+
+    /**
+     * DEPRECATED: generate_bitcoin_address - Removed for security
+     * @private
+     */
+    // async handleGenerateBitcoinAddress(args) {
+    //     throw new McpError(
+    //         ErrorCode.MethodNotFound,
+    //         'generate_bitcoin_address is deprecated. Use mempool query tools instead for Bitcoin data access.'
+    //     );
+    // }
+
+    /**
+     * DEPRECATED: validate_bitcoin_address - Removed
+     * @private
+     */
+    // async handleValidateBitcoinAddress(args) {
+    //     throw new McpError(
+    //         ErrorCode.MethodNotFound,
+    //         'validate_bitcoin_address is deprecated. Use mempool query tools instead.'
+    //     );
+    // }
+
+    /**
+     * Handle query_mempool_address tool call
+     * Get detailed address information from mempool.space with x402 payment
+     * @param {QueryMempoolAddressArgs} args
      * @returns {Promise<Object>}
      * @private
      */
-    async handleListInscriptions(args) {
-        // Validate Bitcoin address first
-        if (!bitcoinService.validateAddress(args.address)) {
+    async handleQueryMempoolAddress(args) {
+        if (!this.httpClient) {
             throw new McpError(
-                ErrorCode.InvalidParams,
-                `Invalid Bitcoin address: ${args.address}`
+                ErrorCode.InternalError,
+                'Payment client not initialized. Cannot make paid mempool queries.'
             );
         }
 
-        const inscriptions = await agentService.listInscriptionsByAddress(args.address);
+        try {
+            console.log('[MCP Server] Querying mempool address:', args.address);
 
-        return {
-            content: [
-                {
-                    type: 'text',
-                    text: JSON.stringify({
-                        address: args.address,
-                        inscriptions: inscriptions,
-                        count: inscriptions.length,
-                    }, null, 2),
-                },
-            ],
-        };
+            const result = await makePaidRequest(
+                this.httpClient,
+                `/api/mempool/address/${args.address}`,
+                {}
+            );
+
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: true,
+                            address: args.address,
+                            data: result.data,
+                            payment: {
+                                amount: '~$0.01 USDC',
+                                method: 'x402',
+                                status: 'settled',
+                            },
+                        }, null, 2),
+                    },
+                ],
+            };
+        } catch (error) {
+            console.error('[MCP Server] Address query failed:', error.message);
+            const mcpError = parseHttpError(error, `/api/mempool/address/${args.address}`);
+            throw mcpError;
+        }
     }
 
     /**
-     * Handle generate_bitcoin_address tool call
-     * @param {Object} args
+     * Handle query_mempool_address_txs tool call
+     * Get transaction history for an address with x402 payment
+     * @param {QueryMempoolAddressTxsArgs} args
      * @returns {Promise<Object>}
      * @private
      */
-    async handleGenerateBitcoinAddress(args) {
-        // Initialize master key if not already done
-        if (!bitcoinService.masterKey) {
-            await bitcoinService.initializeMasterKey();
+    async handleQueryMempoolAddressTxs(args) {
+        if (!this.httpClient) {
+            throw new McpError(
+                ErrorCode.InternalError,
+                'Payment client not initialized. Cannot make paid mempool queries.'
+            );
         }
 
-        const index = args.index || 0;
-        const addressInfo = await bitcoinService.generateAddress(index);
+        try {
+            console.log('[MCP Server] Querying transactions for address:', args.address);
 
-        return {
-            content: [
-                {
-                    type: 'text',
-                    text: JSON.stringify({
-                        address: addressInfo.address,
-                        publicKey: addressInfo.publicKey,
-                        index: index,
-                        network: bitcoinService.getNetworkInfo().network,
-                        note: 'Private key is not returned for security reasons',
-                    }, null, 2),
-                },
-            ],
-        };
+            const result = await makePaidRequest(
+                this.httpClient,
+                `/api/mempool/address/${args.address}/txs`,
+                {}
+            );
+
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: true,
+                            address: args.address,
+                            transactions: result.data,
+                            count: Array.isArray(result.data) ? result.data.length : 0,
+                            payment: {
+                                amount: '~$0.01 USDC',
+                                method: 'x402',
+                                status: 'settled',
+                            },
+                        }, null, 2),
+                    },
+                ],
+            };
+        } catch (error) {
+            console.error('[MCP Server] Transaction query failed:', error.message);
+            const mcpError = parseHttpError(error, `/api/mempool/address/${args.address}/txs`);
+            throw mcpError;
+        }
     }
 
     /**
-     * Handle validate_bitcoin_address tool call
-     * @param {Object} args
+     * Handle query_mempool_transaction tool call
+     * Get detailed transaction information with x402 payment
+     * @param {QueryMempoolTransactionArgs} args
      * @returns {Promise<Object>}
      * @private
      */
-    async handleValidateBitcoinAddress(args) {
-        const isValid = bitcoinService.validateAddress(args.address);
-        const networkInfo = bitcoinService.getNetworkInfo();
+    async handleQueryMempoolTransaction(args) {
+        if (!this.httpClient) {
+            throw new McpError(
+                ErrorCode.InternalError,
+                'Payment client not initialized. Cannot make paid mempool queries.'
+            );
+        }
 
-        return {
-            content: [
-                {
-                    type: 'text',
-                    text: JSON.stringify({
-                        address: args.address,
-                        valid: isValid,
-                        network: networkInfo.network,
-                        message: isValid 
-                            ? `Valid Bitcoin address for ${networkInfo.network}` 
-                            : `Invalid Bitcoin address for ${networkInfo.network}`,
-                    }, null, 2),
-                },
-            ],
-        };
+        try {
+            console.log('[MCP Server] Querying transaction:', args.txid);
+
+            const result = await makePaidRequest(
+                this.httpClient,
+                `/api/mempool/tx/${args.txid}`,
+                {}
+            );
+
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: true,
+                            txid: args.txid,
+                            transaction: result.data,
+                            payment: {
+                                amount: '~$0.01 USDC',
+                                method: 'x402',
+                                status: 'settled',
+                            },
+                        }, null, 2),
+                    },
+                ],
+            };
+        } catch (error) {
+            console.error('[MCP Server] Transaction query failed:', error.message);
+            const mcpError = parseHttpError(error, `/api/mempool/tx/${args.txid}`);
+            throw mcpError;
+        }
+    }
+
+    /**
+     * Handle query_mempool_tx_status tool call
+     * Get transaction confirmation status with x402 payment
+     * @param {QueryMempoolTxStatusArgs} args
+     * @returns {Promise<Object>}
+     * @private
+     */
+    async handleQueryMempoolTxStatus(args) {
+        if (!this.httpClient) {
+            throw new McpError(
+                ErrorCode.InternalError,
+                'Payment client not initialized. Cannot make paid mempool queries.'
+            );
+        }
+
+        try {
+            console.log('[MCP Server] Querying transaction status:', args.txid);
+
+            const result = await makePaidRequest(
+                this.httpClient,
+                `/api/mempool/tx/${args.txid}/status`,
+                {}
+            );
+
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: true,
+                            txid: args.txid,
+                            status: result.data,
+                            payment: {
+                                amount: '~$0.01 USDC',
+                                method: 'x402',
+                                status: 'settled',
+                            },
+                        }, null, 2),
+                    },
+                ],
+            };
+        } catch (error) {
+            console.error('[MCP Server] Status query failed:', error.message);
+            const mcpError = parseHttpError(error, `/api/mempool/tx/${args.txid}/status`);
+            throw mcpError;
+        }
+    }
+
+    /**
+     * Handle query_mempool_block tool call
+     * Get block information with x402 payment
+     * @param {QueryMempoolBlockArgs} args
+     * @returns {Promise<Object>}
+     * @private
+     */
+    async handleQueryMempoolBlock(args) {
+        if (!this.httpClient) {
+            throw new McpError(
+                ErrorCode.InternalError,
+                'Payment client not initialized. Cannot make paid mempool queries.'
+            );
+        }
+
+        try {
+            console.log('[MCP Server] Querying block:', args.block_hash);
+
+            const result = await makePaidRequest(
+                this.httpClient,
+                `/api/mempool/block/${args.block_hash}`,
+                {}
+            );
+
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: true,
+                            block: args.block_hash,
+                            data: result.data,
+                            payment: {
+                                amount: '~$0.01 USDC',
+                                method: 'x402',
+                                status: 'settled',
+                            },
+                        }, null, 2),
+                    },
+                ],
+            };
+        } catch (error) {
+            console.error('[MCP Server] Block query failed:', error.message);
+            const mcpError = parseHttpError(error, `/api/mempool/block/${args.block_hash}`);
+            throw mcpError;
+        }
+    }
+
+    /**
+     * Handle query_mempool_fees tool call
+     * Get fee estimates with x402 micropayment
+     * @param {QueryMempoolFeesArgs} args
+     * @returns {Promise<Object>}
+     * @private
+     */
+    async handleQueryMempoolFees(args) {
+        if (!this.httpClient) {
+            throw new McpError(
+                ErrorCode.InternalError,
+                'Payment client not initialized. Cannot make paid mempool queries.'
+            );
+        }
+
+        try {
+            const interval = args.time_interval || 'next';
+            console.log('[MCP Server] Querying fees for interval:', interval);
+
+            const result = await makePaidRequest(
+                this.httpClient,
+                `/api/mempool/fees/${interval}`,
+                {}
+            );
+
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: true,
+                            interval: interval,
+                            fees: result.data,
+                            payment: {
+                                amount: '$0.001 USDC',
+                                method: 'x402',
+                                type: 'micropayment',
+                                status: 'settled',
+                            },
+                        }, null, 2),
+                    },
+                ],
+            };
+        } catch (error) {
+            console.error('[MCP Server] Fee query failed:', error.message);
+            const interval = args.time_interval || 'next';
+            const mcpError = parseHttpError(error, `/api/mempool/fees/${interval}`);
+            throw mcpError;
+        }
+    }
+
+    /**
+     * Handle query_mempool_stats tool call
+     * Get mempool statistics with x402 micropayment
+     * @param {QueryMempoolStatsArgs} args
+     * @returns {Promise<Object>}
+     * @private
+     */
+    async handleQueryMempoolStats(args) {
+        if (!this.httpClient) {
+            throw new McpError(
+                ErrorCode.InternalError,
+                'Payment client not initialized. Cannot make paid mempool queries.'
+            );
+        }
+
+        try {
+            console.log('[MCP Server] Querying mempool statistics');
+
+            const result = await makePaidRequest(
+                this.httpClient,
+                '/api/mempool/stats',
+                {}
+            );
+
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: true,
+                            stats: result.data,
+                            payment: {
+                                amount: '$0.001 USDC',
+                                method: 'x402',
+                                type: 'micropayment',
+                                status: 'settled',
+                            },
+                        }, null, 2),
+                    },
+                ],
+            };
+        } catch (error) {
+            console.error('[MCP Server] Stats query failed:', error.message);
+            const mcpError = parseHttpError(error, '/api/mempool/stats');
+            throw mcpError;
+        }
+    }
+
+    /**
+     * Handle query_mempool_height tool call
+     * Get current block height (FREE - no payment required)
+     * @param {QueryMempoolHeightArgs} args
+     * @returns {Promise<Object>}
+     * @private
+     */
+    async handleQueryMempoolHeight(args) {
+        try {
+            console.log('[MCP Server] Querying current block height');
+
+            // This endpoint is free, so we can call it directly without the payment client
+            const result = await fetch('https://mempool.space/api/blocks/tip/height')
+                .then(res => res.json())
+                .catch(error => {
+                    throw new McpError(
+                        ErrorCode.InternalError,
+                        `Failed to fetch block height: ${error.message}`
+                    );
+                });
+
+            return {
+                content: [
+                    {
+                        type: 'text',
+                        text: JSON.stringify({
+                            success: true,
+                            height: result,
+                            payment: {
+                                amount: 'FREE',
+                                method: 'public_api',
+                                status: 'none',
+                            },
+                        }, null, 2),
+                    },
+                ],
+            };
+        } catch (error) {
+            console.error('[MCP Server] Height query failed:', error.message);
+            const mcpError = parseHttpError(error, '/api/mempool/height');
+            throw mcpError;
+        }
     }
 
     /**
@@ -351,14 +726,21 @@ class EngraveProtocolMCPServer {
     async start() {
         const transport = new StdioServerTransport();
         await this.server.connect(transport);
-        
-        console.log('🪶 Engrave Protocol MCP Server started');
-        console.log('Available tools:');
-        console.log('  - inscribe_ordinal: Create Bitcoin Ordinals inscriptions (x402 paid)');
-        console.log('  - get_inscription_status: Check inscription status');
-        console.log('  - list_inscriptions: List inscriptions by address');
-        console.log('  - generate_bitcoin_address: Generate new Bitcoin address');
-        console.log('  - validate_bitcoin_address: Validate Bitcoin address');
+
+        console.log('Engrave Protocol MCP Server started - Mempool x402 Edition');
+        console.log('Production-ready Bitcoin blockchain data via mempool.space');
+        console.log('');
+        console.log('Available tools (x402 Solana payments):');
+        console.log('  - query_mempool_address: Get address info (~$0.01 USDC)');
+        console.log('  - query_mempool_address_txs: Get address transactions (~$0.01 USDC)');
+        console.log('  - query_mempool_transaction: Get transaction details (~$0.01 USDC)');
+        console.log('  - query_mempool_tx_status: Get transaction status (~$0.01 USDC)');
+        console.log('  - query_mempool_block: Get block information (~$0.01 USDC)');
+        console.log('  - query_mempool_fees: Get fee estimates ($0.001 USDC micropayment)');
+        console.log('  - query_mempool_stats: Get mempool statistics ($0.001 USDC micropayment)');
+        console.log('  - query_mempool_height: Get current block height (FREE)');
+        console.log('');
+        console.log('Payment method: x402 protocol via Solana wallet');
     }
 }
 
