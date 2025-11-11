@@ -59,12 +59,4 @@ export default {
 			free: true,
 		},
 	},
-
-	// Pricing tiers (multipliers applied to base prices)
-	tiers: {
-		free: 1.0,
-		basic: 1.0,
-		premium: 0.75,   // 25% discount
-		enterprise: 0.5, // 50% discount
-	},
 };
