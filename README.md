@@ -276,30 +276,6 @@ curl http://localhost:3000/api/v1/mempool/fees     # Paid endpoint (returns 402)
 
 ---
 
-## 🎯 Roadmap
-
-**Phase 1** (Current): Bitcoin Testnet + Solana Devnet
-- 8 mempool endpoints operational
-- x402 payment flow working
-- MCP integration complete
-
-**Phase 2** (Q1 2025): Mainnet Launch
-- Bitcoin mainnet data
-- Real USDC payments on Solana
-- Public API access
-
-**Phase 3** (Q2 2025): Expansion
-- Ethereum support
-- More blockchain APIs
-- Custom query language
-
-**Phase 4** (Q3 2025): Enterprise
-- Volume discounts
-- White-label API
-- SLA guarantees
-
----
-
 ## 🤝 Contributing
 
 This project is built for the **Solana x402 Hackathon (MCP Track)**.
