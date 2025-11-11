@@ -109,7 +109,6 @@ function parsePrice(envVar, configPrice) {
 function buildPricingConfig() {
 	const config = {
 		mempool: {},
-		tiers: pricingData.tiers,
 	};
 
 	// Load mempool prices
@@ -128,27 +127,19 @@ export const pricingConfig = buildPricingConfig();
 
 /**
  * Get price for a specific endpoint
- * @param {string} category - Category (e.g., 'mempool', 'ordinals')
+ * @param {string} category - Category (e.g., 'mempool')
  * @param {string} endpoint - Endpoint name (e.g., 'addressInfo', 'fees')
- * @param {string} [tier='basic'] - Pricing tier
  * @returns {number} Price in token base units
  */
-export function getPrice(category, endpoint, tier = 'basic') {
-	const basePrice = pricingConfig[category]?.[endpoint];
+export function getPrice(category, endpoint) {
+	const price = pricingConfig[category]?.[endpoint];
 
-	if (basePrice === undefined) {
+	if (price === undefined) {
 		console.error(`[PRICING] Unknown endpoint: ${category}.${endpoint}`);
 		return 0;
 	}
 
-	const tierMultiplier = pricingConfig.tiers[tier] || 1.0;
-
-	// Use Decimal for precise tier multiplier calculations
-	const basePriceDecimal = new Decimal(basePrice);
-	const multiplierDecimal = new Decimal(tierMultiplier);
-	const finalPrice = basePriceDecimal.times(multiplierDecimal).floor();
-
-	return finalPrice.toNumber();
+	return price;
 }
 
 /**
