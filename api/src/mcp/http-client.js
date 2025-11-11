@@ -60,9 +60,18 @@ async function buildPaymentTransaction(
 	const asset = new PublicKey(paymentRequirements.asset);
 	const amount = BigInt(paymentRequirements.maxAmountRequired);
 
-	// Get or create associated token accounts
+	// Get associated token addresses
 	const fromAta = await getAssociatedTokenAddress(asset, keypair.publicKey);
 	const toAta = await getAssociatedTokenAddress(asset, payTo);
+
+	//Check if destination token account exists
+	try {
+		await connection.getAccountInfo(toAta);
+	} catch (error) {
+		throw new Error(
+			`Treasury token account does not exist. Treasury needs to initialize token account for ${asset.toBase58()}`
+		);
+	}
 
 	// Create transfer instruction
 	const transferIx = createTransferInstruction(
@@ -93,9 +102,7 @@ async function buildPaymentTransaction(
 
 	tx.add(transferIx);
 
-	// Sign transaction
-	tx.sign(keypair);
-
+	// Don't sign yet - caller will simulate first, then sign
 	return tx;
 }
 
@@ -139,17 +146,33 @@ export function createPaymentEnabledClient(keypair, baseURL) {
 			throw new Error('No payment requirements found in 402 response');
 		}
 
-		// Build and sign payment transaction
+		// Build payment transaction
 		const tx = await buildPaymentTransaction(
 			paymentRequirements,
 			keypair,
 			connection
 		);
 
+		// CRITICAL: Simulate transaction before signing (x402 spec requirement)
+		try {
+			const simulation = await connection.simulateTransaction(tx);
+			if (simulation.value.err) {
+				throw new Error(`Transaction simulation failed: ${JSON.stringify(simulation.value.err)}`);
+			}
+			console.log('[HTTP Client] Transaction simulation successful');
+		} catch (error) {
+			console.error('[HTTP Client] Transaction simulation failed:', error.message);
+			throw new Error(`Cannot proceed with payment: ${error.message}`);
+		}
+
+		// Sign transaction after simulation passes
+		tx.sign(keypair);
+
 		// Serialize transaction
 		const serializedTx = tx.serialize().toString('base64');
 
-		// Create payment payload object
+		// Create payment payload object (x402-solana library structure)
+		// Note: Using library structure for facilitator compatibility
 		const paymentPayload = {
 			x402Version: x402Response.x402Version || 1,
 			network: paymentRequirements.network,
@@ -157,13 +180,13 @@ export function createPaymentEnabledClient(keypair, baseURL) {
 			scheme: 'exact',
 		};
 
-		// Encode payment payload as base64-encoded JSON (as expected by x402-solana)
+		// Encode payment payload as base64-encoded JSON
 		const paymentHeader = Buffer.from(
 			JSON.stringify(paymentPayload),
 			'utf8'
 		).toString('base64');
 
-		console.log('[HTTP Client] Payment transaction created and signed');
+		console.log('[HTTP Client] Payment transaction created, simulated, and signed');
 
 		// Retry with payment
 		const newOptions = {

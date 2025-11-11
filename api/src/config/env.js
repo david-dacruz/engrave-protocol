@@ -37,13 +37,22 @@ import 'dotenv/config';
 /** @type {EnvVarMap} */
 const requiredEnvVars = {
 	TREASURY_WALLET_ADDRESS: process.env.TREASURY_WALLET_ADDRESS,
-	BASE_API_URL: process.env.BASE_API_URL,
 	PORT: process.env.PORT,
 };
 
 // Optional environment variables with defaults
 const FACILITATOR_URL = process.env.FACILITATOR_URL || 'https://facilitator.payai.network';
 const X402_NETWORK = process.env.X402_NETWORK || 'solana-devnet';
+
+// Parse PORT first so we can use it to derive BASE_API_URL
+const parsedPort = Number.parseInt(process.env.PORT || '3000', 10);
+if (!Number.isSafeInteger(parsedPort) || parsedPort <= 0 || parsedPort > 65535) {
+	console.error('❌ Invalid PORT environment variable: must be an integer between 1 and 65535');
+	process.exit(1);
+}
+
+// BASE_API_URL is optional - defaults to http://localhost:PORT
+const BASE_API_URL = process.env.BASE_API_URL || `http://localhost:${parsedPort}`;
 
 // Bitcoin configuration
 const BITCOIN_NETWORK = process.env.BITCOIN_NETWORK || 'testnet';
@@ -76,24 +85,17 @@ for (const [key, value] of Object.entries(requiredEnvVars)) {
 }
 
 const treasuryWalletAddress = requiredEnvVars.TREASURY_WALLET_ADDRESS.trim();
-const baseApiUrl = requiredEnvVars.BASE_API_URL.trim();
-const parsedPort = Number.parseInt(requiredEnvVars.PORT, 10);
 
 if (treasuryWalletAddress.length === 0) {
 	console.error('❌ Invalid TREASURY_WALLET_ADDRESS environment variable: must not be empty');
 	process.exit(1);
 }
 
-if (!Number.isSafeInteger(parsedPort) || parsedPort <= 0 || parsedPort > 65535) {
-	console.error('❌ Invalid PORT environment variable: must be an integer between 1 and 65535');
-	process.exit(1);
-}
-
+// Validate BASE_API_URL format
 try {
-	// Validate URL formatting early to surface configuration mistakes
-	new URL(baseApiUrl);
+	new URL(BASE_API_URL);
 } catch {
-	console.error('❌ Invalid BASE_API_URL environment variable: must be a valid absolute URL');
+	console.error('❌ Invalid BASE_API_URL: must be a valid absolute URL');
 	process.exit(1);
 }
 
@@ -110,7 +112,7 @@ export const config = {
 		walletAddress: treasuryWalletAddress,
 	},
 	api: {
-		baseUrl: baseApiUrl,
+		baseUrl: BASE_API_URL,
 		port: parsedPort,
 	},
 	x402: {

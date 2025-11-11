@@ -55,10 +55,12 @@ const verifyPayment = (price, resourcePath, description) => {
 				paymentRequirements
 			);
 
-			if (!verified) {
+			if (!verified.isValid) {
+				console.error('[MEMPOOL ROUTES] Payment verification failed:', verified.invalidReason);
 				return res.status(402).json({
 					error: 'Invalid payment',
 					message: 'Payment verification failed',
+					reason: verified.invalidReason,
 				});
 			}
 
@@ -118,7 +120,13 @@ const settlePayment = async (req, res, next) => {
 		// Settle payment after response (async, don't await)
 		if (req.paymentHeader && req.paymentRequirements) {
 			x402Service.settlePayment(req.paymentHeader, req.paymentRequirements)
-				.then(() => console.log('[MEMPOOL] Payment settled'))
+				.then((result) => {
+					if (result.success) {
+						console.log('[MEMPOOL] Payment settled successfully');
+					} else {
+						console.error('[MEMPOOL] Payment settlement failed:', result.errorReason);
+					}
+				})
 				.catch(err => console.error('[MEMPOOL] Payment settlement error:', err));
 		}
 
