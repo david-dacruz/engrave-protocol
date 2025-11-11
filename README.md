@@ -168,23 +168,23 @@ The MCP server will automatically:
 ┌────────────────────────────────────────┐
 │  MCP Server (Engrave Protocol)         │
 │  • Manages Solana wallet               │
-│  • Handles x402 payments                │
-│  • 8 mempool query tools                │
+│  • Handles x402 payments               │
+│  • 8 mempool query tools               │
 └──────────────┬─────────────────────────┘
                │ HTTP + x402-axios
                ▼
 ┌────────────────────────────────────────┐
 │  Express API (Payment Gateway)         │
-│  • Verifies payment signatures          │
-│  • Rate limiting (10 req/s)             │
-│  • Async payment settlement             │
+│  • Verifies payment signatures         │
+│  • Rate limiting (10 req/s)            │
+│  • Async payment settlement            │
 └──────────────┬─────────────────────────┘
                │ Rate-limited HTTP
                ▼
 ┌────────────────────────────────────────┐
 │  Mempool.space API                     │
-│  • Bitcoin blockchain data              │
-│  • Testnet & Mainnet support            │
+│  • Bitcoin blockchain data             │
+│  • Testnet & Mainnet support           │
 └────────────────────────────────────────┘
 ```
 
@@ -261,12 +261,11 @@ npm run start            # Start API in production mode
 
 # MCP Server
 npm run mcp:create-wallet # Generate new MCP wallet
-npm run mcp:inspect      # Test MCP server with inspector
+npm run mcp:inspect # Test MCP server with inspector
 
 # Testing
-curl http://localhost:3000/health                  # Health check
-curl http://localhost:3000/api/v1/mempool/height   # Free endpoint
-curl http://localhost:3000/api/v1/mempool/fees     # Paid endpoint (returns 402)
+npm run dev
+npm run test
 ```
 
 ## 🔐 Security Notes
@@ -291,12 +290,6 @@ Contributions welcome:
 
 ---
 
-## 📜 License
-
-MIT License - see [LICENSE](LICENSE) file for details
-
----
-
 ## 🔗 Links
 
 - **GitHub**: https://github.com/david-dacruz/engrave-protocol
@@ -308,7 +301,38 @@ MIT License - see [LICENSE](LICENSE) file for details
 
 ---
 
-**Built for the Solana x402 Hackathon** 🏆
+**Built during the Solana x402 Hackathon** 🏆
 _Making blockchain data affordable for AI Agents_
 
+## 📁 Resources
+
+This repository includes several supporting materials for demos, developers, and presentations.
+
+### 🎥 Demo
+
+- [Hackathon Demo Video](https://github.com/david-dacruz/engrave-protocol/blob/main/resources/demo/hackathon-demo.mov)  
+  _Short demonstration video created for the Solana x402 Hackathon._
+
+### 👨‍💻 Developer Docs
+
+- [API Endpoints (PDF)](https://github.com/david-dacruz/engrave-protocol/blob/main/resources/developers/endpoints.pdf)  
+  _Detailed documentation of API endpoints for developers integrating Engrave Protocol._
+
+### 🪄 Pitch Deck
+
+- [Pitch Deck (HTML)](https://github.com/david-dacruz/engrave-protocol/blob/main/resources/pitch-deck/pitch-deck.html)
+- [Pitch Deck (Markdown)](https://github.com/david-dacruz/engrave-protocol/blob/main/resources/pitch-deck/pitch-deck.md)
+- [Pitch Deck (PDF)](https://github.com/david-dacruz/engrave-protocol/blob/main/resources/pitch-deck/pitch-deck.pdf)
+- [Pitch Deck Notes](https://github.com/david-dacruz/engrave-protocol/blob/main/resources/pitch-deck/README.md)
+
+---
+
+Each resource provides a different format or view of the Engrave Protocol presentation and developer materials.
+
 🪶 **Engrave Protocol** - Pay for what you use, nothing more.
+
+---
+
+## 📜 License
+
+MIT License
