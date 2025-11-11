@@ -109,7 +109,6 @@ function parsePrice(envVar, configPrice) {
 function buildPricingConfig() {
 	const config = {
 		mempool: {},
-		ordinals: {},
 		tiers: pricingData.tiers,
 	};
 
@@ -117,12 +116,6 @@ function buildPricingConfig() {
 	for (const [key, value] of Object.entries(pricingData.mempool)) {
 		const envVar = `PRICE_MEMPOOL_${key.toUpperCase().replace(/([A-Z])/g, '_$1')}`;
 		config.mempool[key] = parsePrice(envVar, value.price);
-	}
-
-	// Load ordinals prices
-	for (const [key, value] of Object.entries(pricingData.ordinals)) {
-		const envVar = `PRICE_ORDINALS_${key.toUpperCase().replace(/([A-Z])/g, '_$1')}`;
-		config.ordinals[key] = parsePrice(envVar, value.price);
 	}
 
 	return config;

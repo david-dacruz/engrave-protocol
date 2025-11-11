@@ -15,33 +15,25 @@ const options = {
 			version: '1.0.0',
 			description: `MCP Server bridging AI Agents on Solana with Bitcoin's settlement layer through x402 payment endpoints.
 
-## API Versioning
-
-### Production (v1)
-- **Mempool** (/api/v1/mempool/*) - Stable, fully tested Bitcoin mempool data queries
-
-### Beta
-- **Bitcoin** (/api/beta/bitcoin/*) - Wallet operations and utilities (active development)
-- **Ordinals** (/api/beta/ordinals/*) - Inscription queries and management (active development)
-- **Inscription** (/api/beta/inscribe) - Create Bitcoin Ordinals inscriptions (active development)
-
 ## Features
-- Bitcoin Ordinals Inscription with x402 payments (Beta)
-- Mempool.io Bridge for Bitcoin data queries (Production)
-- Bitcoin address generation and validation (Beta)
-- Ordinals query capabilities (Beta)
-- Solana Devnet USDC payments via x402 protocol
+- Mempool.space Bridge for Bitcoin data queries
+- Bitcoin address analytics and transaction verification
+- Fee estimation and mempool statistics
+- Solana USDC payments via x402 protocol
+- AI agent discovery via .well-known/x402.json
 
 ## x402 Payment Protocol
-All marked endpoints require x402 payment header for access. Include payment information in the request header.
+All paid endpoints require x402 payment headers for access.
+
+### Payment Tiers
+- **Standard** ($0.05-$0.25 USDC) - Address analytics, transactions, blocks
+- **Micropayments** ($0.01 USDC) - Fee estimates, mempool stats
+- **Free** - Block height endpoint
 
 ### Payment Headers
 - Endpoints marked with lock icon (🔐) require x402 payment
 - Free endpoints are available without payment
-- Pricing varies by operation complexity and network demand
-
-### Beta Notice
-Beta endpoints ([BETA] prefix) are under active development and may change based on feedback. Production endpoints (v1) are stable and ready for integration.`,
+- All payments settled on Solana Devnet`,
 			contact: {
 				name: 'Engrave Protocol',
 				url: 'https://github.com/david-dacruz/engrave-protocol',
@@ -340,9 +332,6 @@ Beta endpoints ([BETA] prefix) are under active development and may change based
 	},
 	apis: [
 		'./src/routes/mempool.routes.js',
-		'./src/routes/bitcoin.routes.js',
-		'./src/routes/inscribe.routes.js',
-		'./src/routes/ordinals.routes.js',
 	],
 };
 

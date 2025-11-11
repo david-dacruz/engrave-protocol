@@ -60,15 +60,6 @@ export default {
 		},
 	},
 
-	// Bitcoin Ordinals Endpoints
-	ordinals: {
-		inscription: {
-			price: 1.00,
-			description: 'Create Bitcoin inscription',
-			category: 'inscription',
-		},
-	},
-
 	// Pricing tiers (multipliers applied to base prices)
 	tiers: {
 		free: 1.0,
