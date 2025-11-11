@@ -1,6 +1,6 @@
 // @ts-check
 import swaggerJsdoc from 'swagger-jsdoc';
-import { getAllPricing } from './pricing.js';
+import { getAllPricingData } from './pricing.js';
 
 /**
  * OpenAPI 3.1 Specification Configuration

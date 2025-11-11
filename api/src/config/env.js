@@ -135,3 +135,17 @@ export const config = {
 		rateLimitWindowMs: MEMPOOL_RATE_LIMIT_WINDOW_MS,
 	},
 };
+
+/**
+ * Get simplified config for manifest generation
+ * @returns {Object}
+ */
+export function getConfig() {
+	return {
+		publicUrl: config.api.baseUrl,
+		port: config.api.port,
+		network: config.x402.network,
+		treasuryPublicKey: config.treasury.walletAddress,
+		bitcoinNetwork: config.bitcoin.network,
+	};
+}
