@@ -1,7 +1,7 @@
 // @ts-check
 import 'dotenv/config'; // Load .env FIRST before any other imports
-import {config} from './src/config/env.js';
 import app from './src/app.js';
+import {config} from './src/config/env.js';
 
 /**
  * Engrave Protocol - Server Entry Point
@@ -9,21 +9,18 @@ import app from './src/app.js';
  */
 
 const PORT = config.api.port;
+const TA = config.treasury.walletAddress;
 
 // Start the server
 app.listen(PORT, () => {
 	console.log(`
 ╔══════════════════════════════════════════════════════════════╗
-║  🪶 Engrave Protocol - MCP Server                            ║
+║  Engrave Protocol - MCP Server                               ║
 ╟──────────────────────────────────────────────────────────────╢
 ║  Status: Running                                             ║
 ║  Port: ${PORT.toString().padEnd(54)}║
+║. Treasury: ${TA}.     ║
 ║  Network: Solana Devnet                                      ║
-║  Treasury: ${config.treasury.walletAddress.substring(0, 20)}...${' '.repeat(18)}║
 ╚══════════════════════════════════════════════════════════════╝
 	`);
-	console.log(`🔗 API Endpoints:`);
-	console.log(`   GET  ${config.api.baseUrl}/health`);
-	console.log(`   GET  ${config.api.baseUrl}/api/inscribe (x402 protected)`);
-	console.log('');
 });

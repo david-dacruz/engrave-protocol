@@ -4,7 +4,7 @@
 	"description": "MCP Server bridging AI Agents on Solana with Bitcoin's settlement layer through x402 payment endpoints",
 	"type": "module",
 	"scripts": {
-		"install:all": "npm install && cd api && npm install",
+		"install:all": "cd api && npm install",
 		"dev": "cd api && npm run dev",
 		"start": "cd api && npm start",
 		"test": "cd api && npm test",

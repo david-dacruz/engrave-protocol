@@ -19,6 +19,7 @@ Instead of expensive monthly subscriptions, AI agents pay tiny amounts (as low a
 ## ❗ Problem Statement
 
 Traditional blockchain data APIs require:
+
 - **$99+/month subscriptions** (regardless of usage)
 - **API key management** (security risks)
 - **Rate limits** (even if you pay)
@@ -52,6 +53,7 @@ AI responds with fee recommendations
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - Node.js 18+ installed
 - MCP-compatible client (Claude Desktop recommended)
 - Solana wallet with USDC on Devnet
@@ -105,16 +107,19 @@ claude mcp add engrave-protocol \
 
 ```json
 {
-  "mcpServers": {
-    "engrave-protocol": {
-      "command": "sh",
-      "args": ["-c", "cd /ABSOLUTE/PATH/TO/engrave-protocol/api && node src/mcp/server.js"],
-      "env": {
-        "PORT": "3000",
-        "TREASURY_WALLET_ADDRESS": "your_solana_treasury_address"
-      }
-    }
-  }
+	"mcpServers": {
+		"engrave-protocol": {
+			"command": "sh",
+			"args": [
+				"-c",
+				"cd /ABSOLUTE/PATH/TO/engrave-protocol/api && node src/mcp/server.js"
+			],
+			"env": {
+				"PORT": "3000",
+				"TREASURY_WALLET_ADDRESS": "your_solana_treasury_address"
+			}
+		}
+	}
 }
 ```
 
@@ -127,6 +132,7 @@ What are the current Bitcoin testnet fee recommendations?
 ```
 
 The MCP server will automatically:
+
 - Pay $0.01 USDC on Solana
 - Query the mempool API
 - Return live fee data
@@ -135,16 +141,16 @@ The MCP server will automatically:
 
 ## 🔧 Available MCP Tools (8 Total)
 
-| Tool | Description | Cost | Use Case |
-|------|-------------|------|----------|
-| `query_mempool_height` | Current block height | **FREE** | Connectivity check |
-| `query_mempool_fees` | Fee recommendations | $0.01 | Transaction planning |
-| `query_mempool_stats` | Mempool statistics | $0.01 | Congestion monitoring |
-| `query_mempool_tx_status` | TX confirmation status | $0.05 | Track confirmations |
-| `query_mempool_transaction` | Full TX details | $0.10 | Investigation |
-| `query_mempool_address` | Address info & balance | $0.10 | Balance check |
-| `query_mempool_address_txs` | Address TX history | $0.25 | Full audit |
-| `query_mempool_block` | Block data | $0.10 | Chain analysis |
+| Tool                        | Description            | Cost     | Use Case              |
+| --------------------------- | ---------------------- | -------- | --------------------- |
+| `query_mempool_height`      | Current block height   | **FREE** | Connectivity check    |
+| `query_mempool_fees`        | Fee recommendations    | $0.01    | Transaction planning  |
+| `query_mempool_stats`       | Mempool statistics     | $0.01    | Congestion monitoring |
+| `query_mempool_tx_status`   | TX confirmation status | $0.05    | Track confirmations   |
+| `query_mempool_transaction` | Full TX details        | $0.10    | Investigation         |
+| `query_mempool_address`     | Address info & balance | $0.10    | Balance check         |
+| `query_mempool_address_txs` | Address TX history     | $0.25    | Full audit            |
+| `query_mempool_block`       | Block data             | $0.10    | Chain analysis        |
 
 **All prices in USDC on Solana Devnet**
 
@@ -189,6 +195,7 @@ The MCP server will automatically:
 ## 💡 Example Use Cases
 
 ### 1. Trading Bot
+
 ```
 Monitor mempool congestion every 30 seconds to time transactions
 Cost: $0.03/check = $87/day (if running 24/7)
@@ -197,6 +204,7 @@ Savings: 70-99% depending on actual usage
 ```
 
 ### 2. Blockchain Explorer
+
 ```
 User queries their transaction → pay $0.10 → return data
 Explorer charges user $0.12 (20% markup)
@@ -204,6 +212,7 @@ Zero fixed costs, instant profit margin
 ```
 
 ### 3. Research & Analysis
+
 ```
 Academic studying Bitcoin patterns sporadically
 Heavy analysis: $50/week when active
@@ -213,6 +222,7 @@ Savings: ~$600/year
 ```
 
 ### 4. AI Assistant
+
 ```
 User: "Should I send my Bitcoin transaction now?"
 Agent: Checks fees ($0.01) + mempool stats ($0.01)
@@ -225,12 +235,14 @@ Total cost: $0.02 per question
 ## 📊 Cost Comparison
 
 ### Traditional API (mempool.space equivalent)
+
 - **Monthly subscription**: $99/month
 - **Annual cost**: $1,188/year
 - **Cost per query** (30/month): $3.30
 - **Wasted if unused**: $99/month
 
 ### Engrave Protocol
+
 - **Pay per query**: $0.01 - $0.25
 - **Annual cost**: Only what you use
 - **Cost per query**: $0.01 - $0.25
@@ -260,7 +272,6 @@ curl http://localhost:3000/api/v1/mempool/fees     # Paid endpoint (returns 402)
 ## 🔐 Security Notes
 
 - ⚠️ **Development Only**: Currently on Bitcoin testnet + Solana devnet
-- 🔑 **Wallet Security**: Never commit `mcp_wallet.json` to git
 - 💰 **Limited Funds**: Keep minimal USDC in MCP wallet
 - 🔒 **Environment Variables**: Use `.env` for sensitive config
 
@@ -271,6 +282,7 @@ curl http://localhost:3000/api/v1/mempool/fees     # Paid endpoint (returns 402)
 This project is built for the **Solana x402 Hackathon (MCP Track)**.
 
 Contributions welcome:
+
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing`)
 3. Commit changes (`git commit -m 'Add amazing feature'`)
@@ -297,6 +309,6 @@ MIT License - see [LICENSE](LICENSE) file for details
 ---
 
 **Built for the Solana x402 Hackathon** 🏆
-*Making blockchain data affordable for AI Agents*
+_Making blockchain data affordable for AI Agents_
 
 🪶 **Engrave Protocol** - Pay for what you use, nothing more.

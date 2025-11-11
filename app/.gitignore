@@ -1,7 +1,0 @@
-wallet.txt
-.env
-node_modules
-.DS_Store
-npm-debug.log
-.vscode
-.idea
