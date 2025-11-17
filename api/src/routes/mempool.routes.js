@@ -530,7 +530,49 @@ router.get('/fees',
 	}
 );
 
-// Also accept optional interval parameter for API compatibility
+/**
+ * @swagger
+ * /api/mempool/fees/{interval}:
+ *   get:
+ *     tags:
+ *       - Mempool
+ *     summary: Get recommended Bitcoin fee rates (with interval)
+ *     description: "🔐 Get current Bitcoin network fee recommendations. Interval parameter accepted for API compatibility. **Cost: $0.01 USDC** (micropayment)"
+ *     security:
+ *       - x402: []
+ *     parameters:
+ *       - name: interval
+ *         in: path
+ *         required: true
+ *         description: Time interval (accepted for compatibility but not used)
+ *         schema:
+ *           type: string
+ *           example: next
+ *     responses:
+ *       '200':
+ *         description: Fee rates retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/MempoolFees'
+ *       '402':
+ *         description: Payment required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaymentRequired'
+ *       '500':
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+/**
+ * GET /api/mempool/fees/:interval
+ * Also accept optional interval parameter for API compatibility
+ * x402 protected - configurable pricing (micropayment!)
+ */
 router.get('/fees/:interval',
 	verifyPayment(getPrice('mempool', 'fees'), '/api/mempool/fees/:interval', 'Bitcoin Fee Estimation'),
 	settlePayment,
@@ -669,5 +711,399 @@ router.get('/height', async (req, res) => {
 		network: mempoolService.network,
 	});
 });
+
+/**
+ * @swagger
+ * /api/mempool/address/{address}/utxo:
+ *   get:
+ *     tags:
+ *       - Mempool
+ *     summary: Get address UTXOs
+ *     description: "🔐 Retrieve unspent transaction outputs for a Bitcoin address. **Cost: $0.05 USDC**"
+ *     security:
+ *       - x402: []
+ *     parameters:
+ *       - name: address
+ *         in: path
+ *         required: true
+ *         description: Bitcoin address
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: UTXOs retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/MempoolAddressUtxo'
+ *       '402':
+ *         description: Payment required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaymentRequired'
+ *       '500':
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+/**
+ * GET /api/mempool/address/:address/utxo
+ * Get UTXOs for an address (Phase 1)
+ * x402 protected
+ */
+router.get('/address/:address/utxo',
+	verifyPayment(getPrice('mempool', 'addressUtxo'), '/api/mempool/address/:address/utxo', 'Bitcoin Address UTXO Query'),
+	settlePayment,
+	createHandler(
+		mempoolService.getAddressUtxo.bind(mempoolService),
+		(req) => [req.params.address],
+		(result, [address]) => ({
+			success: true,
+			address,
+			utxos: result.data,
+			count: result.count,
+			network: mempoolService.network,
+		})
+	)
+);
+
+/**
+ * @swagger
+ * /api/mempool/address/{address}/txs/mempool:
+ *   get:
+ *     tags:
+ *       - Mempool
+ *     summary: Get unconfirmed address transactions
+ *     description: "🔐 Retrieve unconfirmed transactions for a Bitcoin address. **Cost: $0.02 USDC** (micropayment)"
+ *     security:
+ *       - x402: []
+ *     parameters:
+ *       - name: address
+ *         in: path
+ *         required: true
+ *         description: Bitcoin address
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Mempool transactions retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/MempoolAddressMempoolTxs'
+ *       '402':
+ *         description: Payment required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaymentRequired'
+ *       '500':
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+/**
+ * GET /api/mempool/address/:address/txs/mempool
+ * Get unconfirmed transactions for an address (Phase 1)
+ * x402 protected - micropayment
+ */
+router.get('/address/:address/txs/mempool',
+	verifyPayment(getPrice('mempool', 'addressTxsMempool'), '/api/mempool/address/:address/txs/mempool', 'Bitcoin Address Mempool Transactions'),
+	settlePayment,
+	createHandler(
+		mempoolService.getAddressMempoolTxs.bind(mempoolService),
+		(req) => [req.params.address],
+		(result, [address]) => ({
+			success: true,
+			address,
+			transactions: result.data,
+			count: result.count,
+			network: mempoolService.network,
+		})
+	)
+);
+
+/**
+ * @swagger
+ * /api/mempool/tx/{txid}/hex:
+ *   get:
+ *     tags:
+ *       - Mempool
+ *     summary: Get raw transaction hex
+ *     description: "🔐 Retrieve raw transaction data in hex format. **Cost: $0.03 USDC**"
+ *     security:
+ *       - x402: []
+ *     parameters:
+ *       - name: txid
+ *         in: path
+ *         required: true
+ *         description: Bitcoin transaction ID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Transaction hex retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/MempoolTransactionHex'
+ *       '402':
+ *         description: Payment required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaymentRequired'
+ *       '500':
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+/**
+ * GET /api/mempool/tx/:txid/hex
+ * Get raw transaction hex (Phase 1)
+ * x402 protected
+ */
+router.get('/tx/:txid/hex',
+	verifyPayment(getPrice('mempool', 'txHex'), '/api/mempool/tx/:txid/hex', 'Bitcoin Transaction Hex Query'),
+	settlePayment,
+	createHandler(
+		mempoolService.getTransactionHex.bind(mempoolService),
+		(req) => [req.params.txid],
+		(result, [txid]) => ({
+			success: true,
+			txid,
+			hex: result.data,
+			network: mempoolService.network,
+		})
+	)
+);
+
+/**
+ * @swagger
+ * /api/mempool/tx/{txid}/outspends:
+ *   get:
+ *     tags:
+ *       - Mempool
+ *     summary: Get transaction output spend status
+ *     description: "🔐 Check if transaction outputs have been spent. **Cost: $0.05 USDC**"
+ *     security:
+ *       - x402: []
+ *     parameters:
+ *       - name: txid
+ *         in: path
+ *         required: true
+ *         description: Bitcoin transaction ID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Output spend status retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/MempoolTransactionOutspends'
+ *       '402':
+ *         description: Payment required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaymentRequired'
+ *       '500':
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+/**
+ * GET /api/mempool/tx/:txid/outspends
+ * Get transaction output spend status (Phase 1)
+ * x402 protected
+ */
+router.get('/tx/:txid/outspends',
+	verifyPayment(getPrice('mempool', 'txOutspends'), '/api/mempool/tx/:txid/outspends', 'Bitcoin Transaction Outspends Query'),
+	settlePayment,
+	createHandler(
+		mempoolService.getTransactionOutspends.bind(mempoolService),
+		(req) => [req.params.txid],
+		(result, [txid]) => ({
+			success: true,
+			txid,
+			outspends: result.data,
+			network: mempoolService.network,
+		})
+	)
+);
+
+/**
+ * @swagger
+ * /api/mempool/block/{hash}/txs:
+ *   get:
+ *     tags:
+ *       - Mempool
+ *     summary: Get block transactions
+ *     description: "🔐 Retrieve all transactions in a block. **Cost: $0.15 USDC**"
+ *     security:
+ *       - x402: []
+ *     parameters:
+ *       - name: hash
+ *         in: path
+ *         required: true
+ *         description: Bitcoin block hash
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: Block transactions retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/MempoolBlockTransactions'
+ *       '402':
+ *         description: Payment required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaymentRequired'
+ *       '500':
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+/**
+ * GET /api/mempool/block/:hash/txs
+ * Get block transactions (Phase 1)
+ * x402 protected
+ */
+router.get('/block/:hash/txs',
+	verifyPayment(getPrice('mempool', 'blockTxs'), '/api/mempool/block/:hash/txs', 'Bitcoin Block Transactions Query'),
+	settlePayment,
+	createHandler(
+		mempoolService.getBlockTransactions.bind(mempoolService),
+		(req) => [req.params.hash],
+		(result, [hash]) => ({
+			success: true,
+			blockHash: hash,
+			transactions: result.data,
+			count: result.count,
+			network: mempoolService.network,
+		})
+	)
+);
+
+/**
+ * @swagger
+ * /api/mempool/block-height/{height}:
+ *   get:
+ *     tags:
+ *       - Mempool
+ *     summary: Get block by height
+ *     description: "🔐 Retrieve block information by block height. **Cost: $0.05 USDC**"
+ *     security:
+ *       - x402: []
+ *     parameters:
+ *       - name: height
+ *         in: path
+ *         required: true
+ *         description: Block height number
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       '200':
+ *         description: Block retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/MempoolBlockByHeight'
+ *       '402':
+ *         description: Payment required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaymentRequired'
+ *       '500':
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+/**
+ * GET /api/mempool/block-height/:height
+ * Get block by height (Phase 1)
+ * x402 protected
+ */
+router.get('/block-height/:height',
+	verifyPayment(getPrice('mempool', 'blockHeight'), '/api/mempool/block-height/:height', 'Bitcoin Block Height Query'),
+	settlePayment,
+	createHandler(
+		mempoolService.getBlockByHeight.bind(mempoolService),
+		(req) => [req.params.height],
+		(result, [height]) => ({
+			success: true,
+			height: parseInt(height),
+			data: result.data,
+			network: mempoolService.network,
+		})
+	)
+);
+
+/**
+ * @swagger
+ * /api/mempool/fees/mempool-blocks:
+ *   get:
+ *     tags:
+ *       - Mempool
+ *     summary: Get projected mempool blocks
+ *     description: "🔐 Get projected mempool blocks with fee information. **Cost: $0.02 USDC** (micropayment)"
+ *     security:
+ *       - x402: []
+ *     responses:
+ *       '200':
+ *         description: Mempool blocks retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/MempoolProjectedBlocks'
+ *       '402':
+ *         description: Payment required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/PaymentRequired'
+ *       '500':
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+/**
+ * GET /api/mempool/fees/mempool-blocks
+ * Get projected mempool blocks (Phase 1)
+ * x402 protected - micropayment
+ */
+router.get('/fees/mempool-blocks',
+	verifyPayment(getPrice('mempool', 'mempoolBlocks'), '/api/mempool/fees/mempool-blocks', 'Mempool Blocks Projection'),
+	settlePayment,
+	createHandler(
+		mempoolService.getMempoolBlocks.bind(mempoolService),
+		() => [],
+		(result) => ({
+			success: true,
+			blocks: result.data,
+			network: mempoolService.network,
+		})
+	)
+);
 
 export default router;

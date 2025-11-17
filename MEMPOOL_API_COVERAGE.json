@@ -1,0 +1,705 @@
+{
+  "audit": {
+    "date": "2025-01-17",
+    "project": "Engrave Protocol - Mempool API Bridge",
+    "version": "1.0.0"
+  },
+  "summary": {
+    "totalImplemented": 8,
+    "totalAvailable": 50,
+    "coveragePercentage": 16,
+    "implementationFiles": {
+      "routes": "api/src/routes/mempool.routes.js",
+      "service": "api/src/services/mempool.service.js",
+      "linesOfCode": 951
+    }
+  },
+  "implemented": [
+    {
+      "endpoint": "/address/:address",
+      "method": "GET",
+      "category": "addresses",
+      "cost": 0.10,
+      "costUnit": "USDC",
+      "serviceMethod": "getAddress",
+      "status": "production",
+      "line": 182
+    },
+    {
+      "endpoint": "/address/:address/txs",
+      "method": "GET",
+      "category": "addresses",
+      "cost": 0.25,
+      "costUnit": "USDC",
+      "serviceMethod": "getAddressTransactions",
+      "status": "production",
+      "line": 252
+    },
+    {
+      "endpoint": "/tx/:txid",
+      "method": "GET",
+      "category": "transactions",
+      "cost": 0.10,
+      "costUnit": "USDC",
+      "serviceMethod": "getTransaction",
+      "status": "production",
+      "line": 311
+    },
+    {
+      "endpoint": "/tx/:txid/status",
+      "method": "GET",
+      "category": "transactions",
+      "cost": 0.05,
+      "costUnit": "USDC",
+      "serviceMethod": "getTransactionStatus",
+      "status": "production",
+      "line": 386
+    },
+    {
+      "endpoint": "/block/:hash",
+      "method": "GET",
+      "category": "blocks",
+      "cost": 0.10,
+      "costUnit": "USDC",
+      "serviceMethod": "getBlock",
+      "status": "production",
+      "line": 452
+    },
+    {
+      "endpoint": "/fees",
+      "method": "GET",
+      "category": "fees",
+      "cost": 0.01,
+      "costUnit": "USDC",
+      "serviceMethod": "getRecommendedFees",
+      "status": "production",
+      "line": 511
+    },
+    {
+      "endpoint": "/stats",
+      "method": "GET",
+      "category": "mempool",
+      "cost": 0.01,
+      "costUnit": "USDC",
+      "serviceMethod": "getMempoolStats",
+      "status": "production",
+      "line": 601
+    },
+    {
+      "endpoint": "/height",
+      "method": "GET",
+      "category": "blocks",
+      "cost": 0,
+      "costUnit": "FREE",
+      "serviceMethod": "getBlockHeight",
+      "status": "production",
+      "line": 656
+    }
+  ],
+  "missing": {
+    "addresses": [
+      {
+        "endpoint": "/address/:address/utxo",
+        "method": "GET",
+        "description": "Get unspent transaction outputs for address",
+        "priority": "HIGH",
+        "complexity": "LOW",
+        "estimatedHours": 2,
+        "suggestedCost": 0.05,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/address/:address/utxo"
+      },
+      {
+        "endpoint": "/address/:address/txs/chain/:txid",
+        "method": "GET",
+        "description": "Get confirmed transaction history from specific transaction",
+        "priority": "MEDIUM",
+        "complexity": "LOW",
+        "estimatedHours": 2,
+        "suggestedCost": 0.15,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/address/:address/txs/chain/:txid"
+      },
+      {
+        "endpoint": "/address/:address/txs/mempool",
+        "method": "GET",
+        "description": "Get unconfirmed transactions for address",
+        "priority": "HIGH",
+        "complexity": "LOW",
+        "estimatedHours": 1,
+        "suggestedCost": 0.02,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/address/:address/txs/mempool"
+      },
+      {
+        "endpoint": "/address/search",
+        "method": "POST",
+        "description": "Search multiple addresses at once",
+        "priority": "LOW",
+        "complexity": "MEDIUM",
+        "estimatedHours": 3,
+        "suggestedCost": 0.25,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/address/search"
+      },
+      {
+        "endpoint": "/address-prefix/:prefix",
+        "method": "GET",
+        "description": "Search addresses by prefix",
+        "priority": "LOW",
+        "complexity": "LOW",
+        "estimatedHours": 2,
+        "suggestedCost": 0.05,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/address-prefix/:prefix"
+      },
+      {
+        "endpoint": "/address/:address/txs/chain",
+        "method": "GET",
+        "description": "Get confirmed transaction history only",
+        "priority": "MEDIUM",
+        "complexity": "LOW",
+        "estimatedHours": 1,
+        "suggestedCost": 0.20,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/address/:address/txs/chain"
+      }
+    ],
+    "transactions": [
+      {
+        "endpoint": "/tx/:txid/hex",
+        "method": "GET",
+        "description": "Get raw transaction in hex format",
+        "priority": "HIGH",
+        "complexity": "LOW",
+        "estimatedHours": 1,
+        "suggestedCost": 0.03,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/tx/:txid/hex"
+      },
+      {
+        "endpoint": "/tx/:txid/merkle-proof",
+        "method": "GET",
+        "description": "Get merkle inclusion proof for transaction",
+        "priority": "MEDIUM",
+        "complexity": "LOW",
+        "estimatedHours": 2,
+        "suggestedCost": 0.05,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/tx/:txid/merkle-proof"
+      },
+      {
+        "endpoint": "/tx/:txid/merkleblock-proof",
+        "method": "GET",
+        "description": "Get merkleblock proof for transaction",
+        "priority": "LOW",
+        "complexity": "LOW",
+        "estimatedHours": 2,
+        "suggestedCost": 0.05,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/tx/:txid/merkleblock-proof"
+      },
+      {
+        "endpoint": "/tx/:txid/outspend/:vout",
+        "method": "GET",
+        "description": "Check if specific transaction output is spent",
+        "priority": "HIGH",
+        "complexity": "LOW",
+        "estimatedHours": 1,
+        "suggestedCost": 0.03,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/tx/:txid/outspend/:vout"
+      },
+      {
+        "endpoint": "/tx/:txid/outspends",
+        "method": "GET",
+        "description": "Check spent status of all transaction outputs",
+        "priority": "HIGH",
+        "complexity": "LOW",
+        "estimatedHours": 1,
+        "suggestedCost": 0.05,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/tx/:txid/outspends"
+      },
+      {
+        "endpoint": "/tx/:txid/raw",
+        "method": "GET",
+        "description": "Get raw transaction in binary format",
+        "priority": "MEDIUM",
+        "complexity": "LOW",
+        "estimatedHours": 1,
+        "suggestedCost": 0.03,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/tx/:txid/raw"
+      },
+      {
+        "endpoint": "/tx",
+        "method": "POST",
+        "description": "Broadcast raw transaction to network",
+        "priority": "CRITICAL",
+        "complexity": "MEDIUM",
+        "estimatedHours": 4,
+        "suggestedCost": 0.50,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/tx",
+        "notes": "Essential for complete transaction lifecycle"
+      },
+      {
+        "endpoint": "/txs/recent",
+        "method": "GET",
+        "description": "Get recent transactions",
+        "priority": "LOW",
+        "complexity": "LOW",
+        "estimatedHours": 1,
+        "suggestedCost": 0.02,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/txs/recent"
+      }
+    ],
+    "blocks": [
+      {
+        "endpoint": "/block/:hash/header",
+        "method": "GET",
+        "description": "Get block header only",
+        "priority": "MEDIUM",
+        "complexity": "LOW",
+        "estimatedHours": 1,
+        "suggestedCost": 0.03,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/block/:hash/header"
+      },
+      {
+        "endpoint": "/block/:hash/raw",
+        "method": "GET",
+        "description": "Get raw block in binary format",
+        "priority": "LOW",
+        "complexity": "LOW",
+        "estimatedHours": 1,
+        "suggestedCost": 0.05,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/block/:hash/raw"
+      },
+      {
+        "endpoint": "/block/:hash/status",
+        "method": "GET",
+        "description": "Get block confirmation status",
+        "priority": "MEDIUM",
+        "complexity": "LOW",
+        "estimatedHours": 1,
+        "suggestedCost": 0.03,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/block/:hash/status"
+      },
+      {
+        "endpoint": "/block/:hash/txs",
+        "method": "GET",
+        "description": "Get all transactions in a block",
+        "priority": "HIGH",
+        "complexity": "LOW",
+        "estimatedHours": 2,
+        "suggestedCost": 0.15,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/block/:hash/txs"
+      },
+      {
+        "endpoint": "/block/:hash/txs/:index",
+        "method": "GET",
+        "description": "Get specific transaction by index in block",
+        "priority": "LOW",
+        "complexity": "LOW",
+        "estimatedHours": 1,
+        "suggestedCost": 0.05,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/block/:hash/txs/:index"
+      },
+      {
+        "endpoint": "/block/:hash/txids",
+        "method": "GET",
+        "description": "Get all transaction IDs in a block",
+        "priority": "MEDIUM",
+        "complexity": "LOW",
+        "estimatedHours": 1,
+        "suggestedCost": 0.05,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/block/:hash/txids"
+      },
+      {
+        "endpoint": "/block-height/:height",
+        "method": "GET",
+        "description": "Get block by height number",
+        "priority": "HIGH",
+        "complexity": "LOW",
+        "estimatedHours": 1,
+        "suggestedCost": 0.05,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/block-height/:height"
+      },
+      {
+        "endpoint": "/blocks",
+        "method": "GET",
+        "description": "Get recent blocks",
+        "priority": "LOW",
+        "complexity": "LOW",
+        "estimatedHours": 1,
+        "suggestedCost": 0.03,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/blocks"
+      },
+      {
+        "endpoint": "/blocks/:startHeight",
+        "method": "GET",
+        "description": "Get blocks starting from height",
+        "priority": "LOW",
+        "complexity": "LOW",
+        "estimatedHours": 1,
+        "suggestedCost": 0.05,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/blocks/:startHeight"
+      },
+      {
+        "endpoint": "/blocks/tip/hash",
+        "method": "GET",
+        "description": "Get latest block hash",
+        "priority": "MEDIUM",
+        "complexity": "LOW",
+        "estimatedHours": 0.5,
+        "suggestedCost": 0,
+        "costUnit": "FREE",
+        "upstreamEndpoint": "/blocks/tip/hash"
+      },
+      {
+        "endpoint": "/blocks/tip/height",
+        "method": "GET",
+        "description": "Get latest block height",
+        "priority": "LOW",
+        "complexity": "LOW",
+        "estimatedHours": 0.5,
+        "suggestedCost": 0,
+        "costUnit": "FREE",
+        "upstreamEndpoint": "/blocks/tip/height"
+      },
+      {
+        "endpoint": "/block/:hash/transactions",
+        "method": "POST",
+        "description": "Get multiple transactions from block",
+        "priority": "LOW",
+        "complexity": "MEDIUM",
+        "estimatedHours": 2,
+        "suggestedCost": 0.20,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/block/:hash/transactions"
+      }
+    ],
+    "mempool": [
+      {
+        "endpoint": "/mempool/recent",
+        "method": "GET",
+        "description": "Get recent mempool transactions",
+        "priority": "MEDIUM",
+        "complexity": "LOW",
+        "estimatedHours": 1,
+        "suggestedCost": 0.02,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/mempool/recent"
+      },
+      {
+        "endpoint": "/mempool/txids",
+        "method": "GET",
+        "description": "Get all transaction IDs in mempool",
+        "priority": "LOW",
+        "complexity": "LOW",
+        "estimatedHours": 1,
+        "suggestedCost": 0.02,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/mempool/txids"
+      },
+      {
+        "endpoint": "/v1/fees/mempool-blocks",
+        "method": "GET",
+        "description": "Get projected mempool blocks with fee data",
+        "priority": "HIGH",
+        "complexity": "LOW",
+        "estimatedHours": 2,
+        "suggestedCost": 0.02,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/v1/fees/mempool-blocks"
+      }
+    ],
+    "fees": [
+      {
+        "endpoint": "/v1/fees/mempool-blocks",
+        "method": "GET",
+        "description": "Projected blocks with fee information",
+        "priority": "HIGH",
+        "complexity": "LOW",
+        "estimatedHours": 2,
+        "suggestedCost": 0.02,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/v1/fees/mempool-blocks"
+      },
+      {
+        "endpoint": "/v1/fees/cpfp",
+        "method": "GET",
+        "description": "Child-Pays-For-Parent fee suggestions",
+        "priority": "MEDIUM",
+        "complexity": "MEDIUM",
+        "estimatedHours": 3,
+        "suggestedCost": 0.05,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/v1/fees/cpfp"
+      }
+    ],
+    "mining": [
+      {
+        "endpoint": "/mining/pools",
+        "method": "GET",
+        "description": "List of mining pools",
+        "priority": "MEDIUM",
+        "complexity": "LOW",
+        "estimatedHours": 1,
+        "suggestedCost": 0.01,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/mining/pools"
+      },
+      {
+        "endpoint": "/mining/pools/:timeperiod",
+        "method": "GET",
+        "description": "Mining pools for specific timeperiod",
+        "priority": "LOW",
+        "complexity": "LOW",
+        "estimatedHours": 1,
+        "suggestedCost": 0.01,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/mining/pools/:timeperiod"
+      },
+      {
+        "endpoint": "/mining/pool/:slug",
+        "method": "GET",
+        "description": "Specific mining pool information",
+        "priority": "LOW",
+        "complexity": "LOW",
+        "estimatedHours": 1,
+        "suggestedCost": 0.01,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/mining/pool/:slug"
+      },
+      {
+        "endpoint": "/mining/pool/:slug/hashrate",
+        "method": "GET",
+        "description": "Mining pool hashrate data",
+        "priority": "LOW",
+        "complexity": "MEDIUM",
+        "estimatedHours": 2,
+        "suggestedCost": 0.02,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/mining/pool/:slug/hashrate"
+      },
+      {
+        "endpoint": "/mining/pool/:slug/blocks",
+        "method": "GET",
+        "description": "Blocks mined by specific pool",
+        "priority": "LOW",
+        "complexity": "LOW",
+        "estimatedHours": 1,
+        "suggestedCost": 0.02,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/mining/pool/:slug/blocks"
+      },
+      {
+        "endpoint": "/mining/hashrate",
+        "method": "GET",
+        "description": "Network hashrate statistics",
+        "priority": "MEDIUM",
+        "complexity": "LOW",
+        "estimatedHours": 1,
+        "suggestedCost": 0.01,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/mining/hashrate"
+      },
+      {
+        "endpoint": "/mining/difficulty",
+        "method": "GET",
+        "description": "Difficulty adjustment history",
+        "priority": "MEDIUM",
+        "complexity": "LOW",
+        "estimatedHours": 1,
+        "suggestedCost": 0.01,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/mining/difficulty"
+      },
+      {
+        "endpoint": "/v1/mining/blocks/fees/:blockHeight",
+        "method": "GET",
+        "description": "Fee details for specific block",
+        "priority": "LOW",
+        "complexity": "MEDIUM",
+        "estimatedHours": 2,
+        "suggestedCost": 0.03,
+        "costUnit": "USDC",
+        "upstreamEndpoint": "/v1/mining/blocks/fees/:blockHeight"
+      }
+    ],
+    "websockets": [
+      {
+        "endpoint": "wss://mempool.space/api/v1/ws",
+        "method": "WEBSOCKET",
+        "description": "Real-time updates for mempool, blocks, and transactions",
+        "priority": "MEDIUM",
+        "complexity": "HIGH",
+        "estimatedHours": 8,
+        "suggestedCost": 1.00,
+        "costUnit": "USDC/hour",
+        "upstreamEndpoint": "wss://mempool.space/api/v1/ws"
+      }
+    ]
+  },
+  "coverage": {
+    "byCategory": [
+      {
+        "category": "addresses",
+        "implemented": 2,
+        "available": 8,
+        "coverage": 25,
+        "priority": "HIGH"
+      },
+      {
+        "category": "transactions",
+        "implemented": 2,
+        "available": 10,
+        "coverage": 20,
+        "priority": "HIGH"
+      },
+      {
+        "category": "blocks",
+        "implemented": 1,
+        "available": 13,
+        "coverage": 8,
+        "priority": "HIGH"
+      },
+      {
+        "category": "mempool",
+        "implemented": 1,
+        "available": 4,
+        "coverage": 25,
+        "priority": "MEDIUM"
+      },
+      {
+        "category": "fees",
+        "implemented": 1,
+        "available": 3,
+        "coverage": 33,
+        "priority": "MEDIUM"
+      },
+      {
+        "category": "mining",
+        "implemented": 0,
+        "available": 8,
+        "coverage": 0,
+        "priority": "LOW"
+      },
+      {
+        "category": "websockets",
+        "implemented": 0,
+        "available": 1,
+        "coverage": 0,
+        "priority": "MEDIUM"
+      }
+    ],
+    "byPriority": [
+      {
+        "priority": "CRITICAL",
+        "count": 1,
+        "estimatedHours": 4
+      },
+      {
+        "priority": "HIGH",
+        "count": 9,
+        "estimatedHours": 12
+      },
+      {
+        "priority": "MEDIUM",
+        "count": 12,
+        "estimatedHours": 16
+      },
+      {
+        "priority": "LOW",
+        "count": 18,
+        "estimatedHours": 24
+      }
+    ]
+  },
+  "phases": [
+    {
+      "phase": 1,
+      "name": "Critical & High Priority",
+      "targetCoverage": 40,
+      "estimatedHours": 16,
+      "endpoints": [
+        "/tx (POST - broadcast)",
+        "/address/:address/utxo",
+        "/address/:address/txs/mempool",
+        "/tx/:txid/hex",
+        "/tx/:txid/outspends",
+        "/block/:hash/txs",
+        "/block-height/:height",
+        "/v1/fees/mempool-blocks"
+      ]
+    },
+    {
+      "phase": 2,
+      "name": "Medium Priority",
+      "targetCoverage": 60,
+      "estimatedHours": 16,
+      "endpoints": [
+        "Remaining address endpoints (4)",
+        "Remaining transaction endpoints (4)",
+        "Remaining block endpoints (6)",
+        "Mining hashrate/difficulty (2)"
+      ]
+    },
+    {
+      "phase": 3,
+      "name": "Low Priority & Advanced",
+      "targetCoverage": 90,
+      "estimatedHours": 24,
+      "endpoints": [
+        "Mining pool analytics",
+        "Lightning Network endpoints",
+        "Websocket real-time updates",
+        "Advanced querying endpoints"
+      ]
+    }
+  ],
+  "technicalDebt": [
+    {
+      "issue": "No pagination",
+      "severity": "HIGH",
+      "affectedEndpoints": ["/address/:address/txs"],
+      "recommendation": "Add ?offset=0&limit=25 query parameters"
+    },
+    {
+      "issue": "No caching",
+      "severity": "MEDIUM",
+      "affectedEndpoints": ["all"],
+      "recommendation": "Implement Redis caching for block data and fees"
+    },
+    {
+      "issue": "Limited error context",
+      "severity": "MEDIUM",
+      "affectedEndpoints": ["all"],
+      "recommendation": "Add detailed error codes and messages"
+    },
+    {
+      "issue": "No request validation",
+      "severity": "HIGH",
+      "affectedEndpoints": ["all"],
+      "recommendation": "Use Zod schemas for input validation"
+    },
+    {
+      "issue": "No rate limit headers",
+      "severity": "LOW",
+      "affectedEndpoints": ["all"],
+      "recommendation": "Include X-RateLimit-* headers in responses"
+    }
+  ]
+}

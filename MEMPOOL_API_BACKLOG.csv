@@ -1,0 +1,41 @@
+Category,Endpoint,Method,Description,Priority,Complexity,Est. Hours,Suggested Cost,Cost Unit,Status,Phase,Upstream Endpoint
+addresses,/address/:address/utxo,GET,Get unspent transaction outputs for address,HIGH,LOW,2,0.05,USDC,missing,1,/address/:address/utxo
+addresses,/address/:address/txs/mempool,GET,Get unconfirmed transactions for address,HIGH,LOW,1,0.02,USDC,missing,1,/address/:address/txs/mempool
+addresses,/address/:address/txs/chain/:txid,GET,Get confirmed transaction history from specific transaction,MEDIUM,LOW,2,0.15,USDC,missing,2,/address/:address/txs/chain/:txid
+addresses,/address/:address/txs/chain,GET,Get confirmed transaction history only,MEDIUM,LOW,1,0.20,USDC,missing,2,/address/:address/txs/chain
+addresses,/address/search,POST,Search multiple addresses at once,LOW,MEDIUM,3,0.25,USDC,missing,3,/address/search
+addresses,/address-prefix/:prefix,GET,Search addresses by prefix,LOW,LOW,2,0.05,USDC,missing,3,/address-prefix/:prefix
+transactions,/tx,POST,Broadcast raw transaction to network,CRITICAL,MEDIUM,4,0.50,USDC,missing,1,/tx
+transactions,/tx/:txid/hex,GET,Get raw transaction in hex format,HIGH,LOW,1,0.03,USDC,missing,1,/tx/:txid/hex
+transactions,/tx/:txid/outspends,GET,Check spent status of all transaction outputs,HIGH,LOW,1,0.05,USDC,missing,1,/tx/:txid/outspends
+transactions,/tx/:txid/outspend/:vout,GET,Check if specific transaction output is spent,HIGH,LOW,1,0.03,USDC,missing,1,/tx/:txid/outspend/:vout
+transactions,/tx/:txid/merkle-proof,GET,Get merkle inclusion proof for transaction,MEDIUM,LOW,2,0.05,USDC,missing,2,/tx/:txid/merkle-proof
+transactions,/tx/:txid/raw,GET,Get raw transaction in binary format,MEDIUM,LOW,1,0.03,USDC,missing,2,/tx/:txid/raw
+transactions,/tx/:txid/merkleblock-proof,GET,Get merkleblock proof for transaction,LOW,LOW,2,0.05,USDC,missing,3,/tx/:txid/merkleblock-proof
+transactions,/txs/recent,GET,Get recent transactions,LOW,LOW,1,0.02,USDC,missing,3,/txs/recent
+blocks,/block/:hash/txs,GET,Get all transactions in a block,HIGH,LOW,2,0.15,USDC,missing,1,/block/:hash/txs
+blocks,/block-height/:height,GET,Get block by height number,HIGH,LOW,1,0.05,USDC,missing,1,/block-height/:height
+blocks,/block/:hash/header,GET,Get block header only,MEDIUM,LOW,1,0.03,USDC,missing,2,/block/:hash/header
+blocks,/block/:hash/status,GET,Get block confirmation status,MEDIUM,LOW,1,0.03,USDC,missing,2,/block/:hash/status
+blocks,/block/:hash/txids,GET,Get all transaction IDs in a block,MEDIUM,LOW,1,0.05,USDC,missing,2,/block/:hash/txids
+blocks,/blocks/tip/hash,GET,Get latest block hash,MEDIUM,LOW,0.5,0,FREE,missing,2,/blocks/tip/hash
+blocks,/block/:hash/raw,GET,Get raw block in binary format,LOW,LOW,1,0.05,USDC,missing,3,/block/:hash/raw
+blocks,/block/:hash/txs/:index,GET,Get specific transaction by index in block,LOW,LOW,1,0.05,USDC,missing,3,/block/:hash/txs/:index
+blocks,/blocks,GET,Get recent blocks,LOW,LOW,1,0.03,USDC,missing,3,/blocks
+blocks,/blocks/:startHeight,GET,Get blocks starting from height,LOW,LOW,1,0.05,USDC,missing,3,/blocks/:startHeight
+blocks,/blocks/tip/height,GET,Get latest block height,LOW,LOW,0.5,0,FREE,missing,3,/blocks/tip/height
+blocks,/block/:hash/transactions,POST,Get multiple transactions from block,LOW,MEDIUM,2,0.20,USDC,missing,3,/block/:hash/transactions
+mempool,/v1/fees/mempool-blocks,GET,Get projected mempool blocks with fee data,HIGH,LOW,2,0.02,USDC,missing,1,/v1/fees/mempool-blocks
+mempool,/mempool/recent,GET,Get recent mempool transactions,MEDIUM,LOW,1,0.02,USDC,missing,2,/mempool/recent
+mempool,/mempool/txids,GET,Get all transaction IDs in mempool,LOW,LOW,1,0.02,USDC,missing,3,/mempool/txids
+fees,/v1/fees/mempool-blocks,GET,Projected blocks with fee information,HIGH,LOW,2,0.02,USDC,missing,1,/v1/fees/mempool-blocks
+fees,/v1/fees/cpfp,GET,Child-Pays-For-Parent fee suggestions,MEDIUM,MEDIUM,3,0.05,USDC,missing,2,/v1/fees/cpfp
+mining,/mining/hashrate,GET,Network hashrate statistics,MEDIUM,LOW,1,0.01,USDC,missing,2,/mining/hashrate
+mining,/mining/difficulty,GET,Difficulty adjustment history,MEDIUM,LOW,1,0.01,USDC,missing,2,/mining/difficulty
+mining,/mining/pools,GET,List of mining pools,MEDIUM,LOW,1,0.01,USDC,missing,3,/mining/pools
+mining,/mining/pools/:timeperiod,GET,Mining pools for specific timeperiod,LOW,LOW,1,0.01,USDC,missing,3,/mining/pools/:timeperiod
+mining,/mining/pool/:slug,GET,Specific mining pool information,LOW,LOW,1,0.01,USDC,missing,3,/mining/pool/:slug
+mining,/mining/pool/:slug/hashrate,GET,Mining pool hashrate data,LOW,MEDIUM,2,0.02,USDC,missing,3,/mining/pool/:slug/hashrate
+mining,/mining/pool/:slug/blocks,GET,Blocks mined by specific pool,LOW,LOW,1,0.02,USDC,missing,3,/mining/pool/:slug/blocks
+mining,/v1/mining/blocks/fees/:blockHeight,GET,Fee details for specific block,LOW,MEDIUM,2,0.03,USDC,missing,3,/v1/mining/blocks/fees/:blockHeight
+websockets,wss://mempool.space/api/v1/ws,WEBSOCKET,Real-time updates for mempool blocks and transactions,MEDIUM,HIGH,8,1.00,USDC/hour,missing,3,wss://mempool.space/api/v1/ws

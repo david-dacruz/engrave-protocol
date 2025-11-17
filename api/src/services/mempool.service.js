@@ -270,6 +270,148 @@ class MempoolService {
 			baseURL: this.baseURL,
 		};
 	}
+
+	/**
+	 * Get UTXOs for an address (Phase 1)
+	 * @param {string} address - Bitcoin address
+	 * @returns {Promise<Object>}
+	 */
+	async getAddressUtxo(address) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/address/${address}/utxo`),
+				'getAddressUtxo'
+			);
+			return {
+				success: true,
+				data: response.data,
+				count: response.data.length,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getAddressUtxo');
+		}
+	}
+
+	/**
+	 * Get unconfirmed transactions for an address (Phase 1)
+	 * @param {string} address - Bitcoin address
+	 * @returns {Promise<Object>}
+	 */
+	async getAddressMempoolTxs(address) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/address/${address}/txs/mempool`),
+				'getAddressMempoolTxs'
+			);
+			return {
+				success: true,
+				data: response.data,
+				count: response.data.length,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getAddressMempoolTxs');
+		}
+	}
+
+	/**
+	 * Get raw transaction hex (Phase 1)
+	 * @param {string} txid - Transaction ID
+	 * @returns {Promise<Object>}
+	 */
+	async getTransactionHex(txid) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/tx/${txid}/hex`),
+				'getTransactionHex'
+			);
+			return {
+				success: true,
+				data: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getTransactionHex');
+		}
+	}
+
+	/**
+	 * Get transaction output spend status (Phase 1)
+	 * @param {string} txid - Transaction ID
+	 * @returns {Promise<Object>}
+	 */
+	async getTransactionOutspends(txid) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/tx/${txid}/outspends`),
+				'getTransactionOutspends'
+			);
+			return {
+				success: true,
+				data: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getTransactionOutspends');
+		}
+	}
+
+	/**
+	 * Get block transactions (Phase 1)
+	 * @param {string} hash - Block hash
+	 * @returns {Promise<Object>}
+	 */
+	async getBlockTransactions(hash) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/block/${hash}/txs`),
+				'getBlockTransactions'
+			);
+			return {
+				success: true,
+				data: response.data,
+				count: response.data.length,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getBlockTransactions');
+		}
+	}
+
+	/**
+	 * Get block by height (Phase 1)
+	 * @param {number|string} height - Block height
+	 * @returns {Promise<Object>}
+	 */
+	async getBlockByHeight(height) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/block-height/${height}`),
+				'getBlockByHeight'
+			);
+			return {
+				success: true,
+				data: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getBlockByHeight');
+		}
+	}
+
+	/**
+	 * Get projected mempool blocks (Phase 1)
+	 * @returns {Promise<Object>}
+	 */
+	async getMempoolBlocks() {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get('/v1/fees/mempool-blocks'),
+				'getMempoolBlocks'
+			);
+			return {
+				success: true,
+				data: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getMempoolBlocks');
+		}
+	}
 }
 
 // Export singleton instance
