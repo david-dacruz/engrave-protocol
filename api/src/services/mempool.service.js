@@ -270,6 +270,719 @@ class MempoolService {
 			baseURL: this.baseURL,
 		};
 	}
+
+	/**
+	 * Get UTXOs for an address (Phase 1)
+	 * @param {string} address - Bitcoin address
+	 * @returns {Promise<Object>}
+	 */
+	async getAddressUtxo(address) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/address/${address}/utxo`),
+				'getAddressUtxo'
+			);
+			return {
+				success: true,
+				data: response.data,
+				count: response.data.length,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getAddressUtxo');
+		}
+	}
+
+	/**
+	 * Get unconfirmed transactions for an address (Phase 1)
+	 * @param {string} address - Bitcoin address
+	 * @returns {Promise<Object>}
+	 */
+	async getAddressMempoolTxs(address) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/address/${address}/txs/mempool`),
+				'getAddressMempoolTxs'
+			);
+			return {
+				success: true,
+				data: response.data,
+				count: response.data.length,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getAddressMempoolTxs');
+		}
+	}
+
+	/**
+	 * Get raw transaction hex (Phase 1)
+	 * @param {string} txid - Transaction ID
+	 * @returns {Promise<Object>}
+	 */
+	async getTransactionHex(txid) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/tx/${txid}/hex`),
+				'getTransactionHex'
+			);
+			return {
+				success: true,
+				data: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getTransactionHex');
+		}
+	}
+
+	/**
+	 * Get transaction output spend status (Phase 1)
+	 * @param {string} txid - Transaction ID
+	 * @returns {Promise<Object>}
+	 */
+	async getTransactionOutspends(txid) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/tx/${txid}/outspends`),
+				'getTransactionOutspends'
+			);
+			return {
+				success: true,
+				data: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getTransactionOutspends');
+		}
+	}
+
+	/**
+	 * Get block transactions (Phase 1)
+	 * @param {string} hash - Block hash
+	 * @returns {Promise<Object>}
+	 */
+	async getBlockTransactions(hash) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/block/${hash}/txs`),
+				'getBlockTransactions'
+			);
+			return {
+				success: true,
+				data: response.data,
+				count: response.data.length,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getBlockTransactions');
+		}
+	}
+
+	/**
+	 * Get block by height (Phase 1)
+	 * @param {number|string} height - Block height
+	 * @returns {Promise<Object>}
+	 */
+	async getBlockByHeight(height) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/block-height/${height}`),
+				'getBlockByHeight'
+			);
+			return {
+				success: true,
+				data: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getBlockByHeight');
+		}
+	}
+
+	/**
+	 * Get projected mempool blocks (Phase 1)
+	 * @returns {Promise<Object>}
+	 */
+	async getMempoolBlocks() {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get('/v1/fees/mempool-blocks'),
+				'getMempoolBlocks'
+			);
+			return {
+				success: true,
+				data: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getMempoolBlocks');
+		}
+	}
+
+	// ========================================
+	// Phase 2: Address Endpoints
+	// ========================================
+
+	/**
+	 * Get confirmed transaction history only (Phase 2)
+	 * @param {string} address - Bitcoin address
+	 * @returns {Promise<Object>}
+	 */
+	async getAddressTxsChain(address) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/address/${address}/txs/chain`),
+				'getAddressTxsChain'
+			);
+			return {
+				success: true,
+				data: response.data,
+				count: response.data.length,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getAddressTxsChain');
+		}
+	}
+
+	/**
+	 * Get confirmed transaction history from specific transaction (Phase 2)
+	 * @param {string} address - Bitcoin address
+	 * @param {string} txid - Transaction ID to start from
+	 * @returns {Promise<Object>}
+	 */
+	async getAddressTxsChainFrom(address, txid) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/address/${address}/txs/chain/${txid}`),
+				'getAddressTxsChainFrom'
+			);
+			return {
+				success: true,
+				data: response.data,
+				count: response.data.length,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getAddressTxsChainFrom');
+		}
+	}
+
+	/**
+	 * Search addresses by prefix (Phase 2)
+	 * @param {string} prefix - Address prefix
+	 * @returns {Promise<Object>}
+	 */
+	async getAddressByPrefix(prefix) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/address-prefix/${prefix}`),
+				'getAddressByPrefix'
+			);
+			return {
+				success: true,
+				data: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getAddressByPrefix');
+		}
+	}
+
+	// ========================================
+	// Phase 2: Transaction Endpoints
+	// ========================================
+
+	/**
+	 * Get merkle inclusion proof for transaction (Phase 2)
+	 * @param {string} txid - Transaction ID
+	 * @returns {Promise<Object>}
+	 */
+	async getTransactionMerkleProof(txid) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/tx/${txid}/merkle-proof`),
+				'getTransactionMerkleProof'
+			);
+			return {
+				success: true,
+				data: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getTransactionMerkleProof');
+		}
+	}
+
+	/**
+	 * Get merkleblock proof for transaction (Phase 2)
+	 * @param {string} txid - Transaction ID
+	 * @returns {Promise<Object>}
+	 */
+	async getTransactionMerkleblockProof(txid) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/tx/${txid}/merkleblock-proof`),
+				'getTransactionMerkleblockProof'
+			);
+			return {
+				success: true,
+				data: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getTransactionMerkleblockProof');
+		}
+	}
+
+	/**
+	 * Check if specific transaction output is spent (Phase 2)
+	 * @param {string} txid - Transaction ID
+	 * @param {number} vout - Output index
+	 * @returns {Promise<Object>}
+	 */
+	async getTransactionOutspendSingle(txid, vout) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/tx/${txid}/outspend/${vout}`),
+				'getTransactionOutspendSingle'
+			);
+			return {
+				success: true,
+				data: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getTransactionOutspendSingle');
+		}
+	}
+
+	/**
+	 * Get raw transaction in binary format (Phase 2)
+	 * @param {string} txid - Transaction ID
+	 * @returns {Promise<Object>}
+	 */
+	async getTransactionRaw(txid) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/tx/${txid}/raw`),
+				'getTransactionRaw'
+			);
+			return {
+				success: true,
+				data: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getTransactionRaw');
+		}
+	}
+
+	/**
+	 * Get recent transactions (Phase 2)
+	 * @returns {Promise<Object>}
+	 */
+	async getRecentTransactions() {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get('/txs/recent'),
+				'getRecentTransactions'
+			);
+			return {
+				success: true,
+				data: response.data,
+				count: response.data.length,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getRecentTransactions');
+		}
+	}
+
+	// ========================================
+	// Phase 2: Block Endpoints
+	// ========================================
+
+	/**
+	 * Get block header only (Phase 2)
+	 * @param {string} hash - Block hash
+	 * @returns {Promise<Object>}
+	 */
+	async getBlockHeader(hash) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/block/${hash}/header`),
+				'getBlockHeader'
+			);
+			return {
+				success: true,
+				data: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getBlockHeader');
+		}
+	}
+
+	/**
+	 * Get raw block in binary format (Phase 2)
+	 * @param {string} hash - Block hash
+	 * @returns {Promise<Object>}
+	 */
+	async getBlockRaw(hash) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/block/${hash}/raw`),
+				'getBlockRaw'
+			);
+			return {
+				success: true,
+				data: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getBlockRaw');
+		}
+	}
+
+	/**
+	 * Get block confirmation status (Phase 2)
+	 * @param {string} hash - Block hash
+	 * @returns {Promise<Object>}
+	 */
+	async getBlockStatus(hash) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/block/${hash}/status`),
+				'getBlockStatus'
+			);
+			return {
+				success: true,
+				data: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getBlockStatus');
+		}
+	}
+
+	/**
+	 * Get specific transaction by index in block (Phase 2)
+	 * @param {string} hash - Block hash
+	 * @param {number} index - Transaction index
+	 * @returns {Promise<Object>}
+	 */
+	async getBlockTxByIndex(hash, index) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/block/${hash}/txs/${index}`),
+				'getBlockTxByIndex'
+			);
+			return {
+				success: true,
+				data: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getBlockTxByIndex');
+		}
+	}
+
+	/**
+	 * Get all transaction IDs in a block (Phase 2)
+	 * @param {string} hash - Block hash
+	 * @returns {Promise<Object>}
+	 */
+	async getBlockTxids(hash) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/block/${hash}/txids`),
+				'getBlockTxids'
+			);
+			return {
+				success: true,
+				data: response.data,
+				count: response.data.length,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getBlockTxids');
+		}
+	}
+
+	/**
+	 * Get recent blocks (Phase 2)
+	 * @param {number} startHeight - Optional start height
+	 * @returns {Promise<Object>}
+	 */
+	async getRecentBlocks(startHeight = null) {
+		try {
+			const endpoint = startHeight ? `/blocks/${startHeight}` : '/blocks';
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(endpoint),
+				'getRecentBlocks'
+			);
+			return {
+				success: true,
+				data: response.data,
+				count: response.data.length,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getRecentBlocks');
+		}
+	}
+
+	/**
+	 * Get blocks starting from height (Phase 2)
+	 * @param {number} startHeight - Start height
+	 * @returns {Promise<Object>}
+	 */
+	async getBlocksFromHeight(startHeight) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/blocks/${startHeight}`),
+				'getBlocksFromHeight'
+			);
+			return {
+				success: true,
+				data: response.data,
+				count: response.data.length,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getBlocksFromHeight');
+		}
+	}
+
+	/**
+	 * Get latest block hash (Phase 2)
+	 * @returns {Promise<Object>}
+	 */
+	async getBlocksTipHash() {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get('/blocks/tip/hash'),
+				'getBlocksTipHash'
+			);
+			return {
+				success: true,
+				hash: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getBlocksTipHash');
+		}
+	}
+
+	// ========================================
+	// Phase 2: Mempool Endpoints
+	// ========================================
+
+	/**
+	 * Get recent mempool transactions (Phase 2)
+	 * @returns {Promise<Object>}
+	 */
+	async getMempoolRecent() {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get('/mempool/recent'),
+				'getMempoolRecent'
+			);
+			return {
+				success: true,
+				data: response.data,
+				count: response.data.length,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getMempoolRecent');
+		}
+	}
+
+	/**
+	 * Get all transaction IDs in mempool (Phase 2)
+	 * @returns {Promise<Object>}
+	 */
+	async getMempoolTxids() {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get('/mempool/txids'),
+				'getMempoolTxids'
+			);
+			return {
+				success: true,
+				data: response.data,
+				count: response.data.length,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getMempoolTxids');
+		}
+	}
+
+	// ========================================
+	// Phase 2: Fee Endpoints
+	// ========================================
+
+	/**
+	 * Child-Pays-For-Parent fee suggestions (Phase 2)
+	 * @returns {Promise<Object>}
+	 */
+	async getFeesCpfp() {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get('/v1/fees/cpfp'),
+				'getFeesCpfp'
+			);
+			return {
+				success: true,
+				data: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getFeesCpfp');
+		}
+	}
+
+	// ========================================
+	// Phase 2: Mining Endpoints
+	// ========================================
+
+	/**
+	 * List of mining pools (Phase 2)
+	 * @param {string} timeperiod - Optional timeperiod (e.g., '24h', '3d', '1w', '1m', '3m', '6m', '1y', '2y', '3y')
+	 * @returns {Promise<Object>}
+	 */
+	async getMiningPools(timeperiod = null) {
+		try {
+			const endpoint = timeperiod ? `/mining/pools/${timeperiod}` : '/mining/pools';
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(endpoint),
+				'getMiningPools'
+			);
+			return {
+				success: true,
+				data: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getMiningPools');
+		}
+	}
+
+	/**
+	 * Mining pools for specific timeperiod (Phase 2)
+	 * @param {string} timeperiod - Timeperiod (e.g., '24h', '3d', '1w', '1m', '3m', '6m', '1y', '2y', '3y')
+	 * @returns {Promise<Object>}
+	 */
+	async getMiningPoolsTimeperiod(timeperiod) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/mining/pools/${timeperiod}`),
+				'getMiningPoolsTimeperiod'
+			);
+			return {
+				success: true,
+				data: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getMiningPoolsTimeperiod');
+		}
+	}
+
+	/**
+	 * Specific mining pool information (Phase 2)
+	 * @param {string} slug - Pool slug
+	 * @returns {Promise<Object>}
+	 */
+	async getMiningPool(slug) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/mining/pool/${slug}`),
+				'getMiningPool'
+			);
+			return {
+				success: true,
+				data: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getMiningPool');
+		}
+	}
+
+	/**
+	 * Mining pool hashrate data (Phase 2)
+	 * @param {string} slug - Pool slug
+	 * @returns {Promise<Object>}
+	 */
+	async getMiningPoolHashrate(slug) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/mining/pool/${slug}/hashrate`),
+				'getMiningPoolHashrate'
+			);
+			return {
+				success: true,
+				data: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getMiningPoolHashrate');
+		}
+	}
+
+	/**
+	 * Blocks mined by specific pool (Phase 2)
+	 * @param {string} slug - Pool slug
+	 * @returns {Promise<Object>}
+	 */
+	async getMiningPoolBlocks(slug) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/mining/pool/${slug}/blocks`),
+				'getMiningPoolBlocks'
+			);
+			return {
+				success: true,
+				data: response.data,
+				count: response.data.length,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getMiningPoolBlocks');
+		}
+	}
+
+	/**
+	 * Network hashrate statistics (Phase 2)
+	 * @returns {Promise<Object>}
+	 */
+	async getMiningHashrate() {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get('/mining/hashrate'),
+				'getMiningHashrate'
+			);
+			return {
+				success: true,
+				data: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getMiningHashrate');
+		}
+	}
+
+	/**
+	 * Difficulty adjustment history (Phase 2)
+	 * @returns {Promise<Object>}
+	 */
+	async getMiningDifficulty() {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get('/mining/difficulty'),
+				'getMiningDifficulty'
+			);
+			return {
+				success: true,
+				data: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getMiningDifficulty');
+		}
+	}
+
+	/**
+	 * Fee details for specific block (Phase 2)
+	 * @param {number} blockHeight - Block height
+	 * @returns {Promise<Object>}
+	 */
+	async getMiningBlockFees(blockHeight) {
+		try {
+			const response = await this._executeWithRateLimit(
+				() => this.client.get(`/v1/mining/blocks/fees/${blockHeight}`),
+				'getMiningBlockFees'
+			);
+			return {
+				success: true,
+				data: response.data,
+			};
+		} catch (error) {
+			return this.handleError(error, 'getMiningBlockFees');
+		}
+	}
 }
 
 // Export singleton instance

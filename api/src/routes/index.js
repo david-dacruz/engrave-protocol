@@ -1,6 +1,7 @@
 // @ts-check
 import express from 'express';
 import mempoolRoutes from './mempool.routes.js';
+import exampleRoutes from '../../examples/migrated-route-example.js';
 import { generateManifest } from '../services/manifest.service.js';
 
 const router = express.Router();
@@ -93,5 +94,8 @@ router.get('/.well-known/x402.json', (req, res) => {
 
 // Mount v1 production routes
 router.use('/api/v1/mempool', mempoolRoutes);
+
+// Mount example routes (demonstrating Zod + OpenAPI pattern)
+router.use('/api/example', exampleRoutes);
 
 export default router;

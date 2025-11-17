@@ -406,7 +406,7 @@ export function generateManifest() {
 
 		// Contact & support
 		contact: {
-			github: 'https://github.com/david-dacruz/engrave-protocol',
+			github: 'https://github.com/engrave-protocol/engrave-api',
 			documentation: `${baseUrl}/api-docs`
 		},
 

@@ -5,10 +5,15 @@ import {corsMiddleware} from './middleware/cors.js';
 import {errorHandler, notFoundHandler} from './middleware/errorHandler.js';
 import {swaggerSpec} from './config/swagger.js';
 import routes from './routes/index.js';
+import openApiRoutes from './routes/openapi.routes.js';
+import { registerMempoolRoutes } from './routes/mempool.openapi.js';
 
 /**
  * Express Application Setup
  */
+
+// Register all mempool routes in OpenAPI spec
+registerMempoolRoutes();
 
 const app = express();
 
@@ -40,11 +45,14 @@ app.use(
 	}),
 );
 
-// Mount OpenAPI JSON spec at /api-docs.json
+// Mount OpenAPI JSON spec at /api-docs.json (legacy Swagger)
 app.get('/api-docs.json', (req, res) => {
 	res.setHeader('Content-Type', 'application/json');
 	res.send(swaggerSpec);
 });
+
+// Mount auto-generated OpenAPI spec from Zod schemas
+app.use(openApiRoutes);
 
 // Mount all routes
 app.use(routes);
