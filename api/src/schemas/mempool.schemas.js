@@ -279,6 +279,209 @@ export const MiningPoolsResponseSchema = z.object({
 }).openapi('MiningPoolsResponse');
 
 // ========================================
+// Phase 2 Response Schemas - Address Endpoints
+// ========================================
+
+export const AddressTxsChainResponseSchema = z.object({
+	success: z.boolean().openapi({ example: true }),
+	address: BitcoinAddressSchema,
+	transactions: z.array(z.any()),
+	count: z.number(),
+	network: NetworkSchema,
+}).openapi('AddressTxsChainResponse');
+
+export const AddressTxsChainFromResponseSchema = z.object({
+	success: z.boolean().openapi({ example: true }),
+	address: BitcoinAddressSchema,
+	fromTxid: TxidSchema,
+	transactions: z.array(z.any()),
+	count: z.number(),
+	network: NetworkSchema,
+}).openapi('AddressTxsChainFromResponse');
+
+export const AddressPrefixResponseSchema = z.object({
+	success: z.boolean().openapi({ example: true }),
+	prefix: z.string(),
+	data: z.any(),
+	network: NetworkSchema,
+}).openapi('AddressPrefixResponse');
+
+// ========================================
+// Phase 2 Response Schemas - Transaction Endpoints
+// ========================================
+
+export const TransactionMerkleProofResponseSchema = z.object({
+	success: z.boolean().openapi({ example: true }),
+	txid: TxidSchema,
+	proof: z.any(),
+	network: NetworkSchema,
+}).openapi('TransactionMerkleProofResponse');
+
+export const TransactionMerkleblockProofResponseSchema = z.object({
+	success: z.boolean().openapi({ example: true }),
+	txid: TxidSchema,
+	proof: z.any(),
+	network: NetworkSchema,
+}).openapi('TransactionMerkleblockProofResponse');
+
+export const TransactionOutspendSingleResponseSchema = z.object({
+	success: z.boolean().openapi({ example: true }),
+	txid: TxidSchema,
+	vout: z.number(),
+	spent: z.any(),
+	network: NetworkSchema,
+}).openapi('TransactionOutspendSingleResponse');
+
+export const TransactionRawResponseSchema = z.object({
+	success: z.boolean().openapi({ example: true }),
+	txid: TxidSchema,
+	raw: z.any(),
+	network: NetworkSchema,
+}).openapi('TransactionRawResponse');
+
+export const RecentTransactionsResponseSchema = z.object({
+	success: z.boolean().openapi({ example: true }),
+	transactions: z.array(z.any()),
+	count: z.number(),
+	network: NetworkSchema,
+}).openapi('RecentTransactionsResponse');
+
+// ========================================
+// Phase 2 Response Schemas - Block Endpoints
+// ========================================
+
+export const BlockHeaderResponseSchema = z.object({
+	success: z.boolean().openapi({ example: true }),
+	hash: BlockHashSchema,
+	header: z.any(),
+	network: NetworkSchema,
+}).openapi('BlockHeaderResponse');
+
+export const BlockRawResponseSchema = z.object({
+	success: z.boolean().openapi({ example: true }),
+	hash: BlockHashSchema,
+	raw: z.any(),
+	network: NetworkSchema,
+}).openapi('BlockRawResponse');
+
+export const BlockStatusResponseSchema = z.object({
+	success: z.boolean().openapi({ example: true }),
+	hash: BlockHashSchema,
+	status: z.any(),
+	network: NetworkSchema,
+}).openapi('BlockStatusResponse');
+
+export const BlockTxByIndexResponseSchema = z.object({
+	success: z.boolean().openapi({ example: true }),
+	hash: BlockHashSchema,
+	index: z.number(),
+	transaction: z.any(),
+	network: NetworkSchema,
+}).openapi('BlockTxByIndexResponse');
+
+export const BlockTxidsResponseSchema = z.object({
+	success: z.boolean().openapi({ example: true }),
+	hash: BlockHashSchema,
+	txids: z.array(z.string()),
+	count: z.number(),
+	network: NetworkSchema,
+}).openapi('BlockTxidsResponse');
+
+export const RecentBlocksResponseSchema = z.object({
+	success: z.boolean().openapi({ example: true }),
+	blocks: z.array(z.any()),
+	count: z.number(),
+	network: NetworkSchema,
+}).openapi('RecentBlocksResponse');
+
+export const BlocksFromHeightResponseSchema = z.object({
+	success: z.boolean().openapi({ example: true }),
+	startHeight: z.number(),
+	blocks: z.array(z.any()),
+	count: z.number(),
+	network: NetworkSchema,
+}).openapi('BlocksFromHeightResponse');
+
+export const BlocksTipHashResponseSchema = z.object({
+	success: z.boolean().openapi({ example: true }),
+	hash: BlockHashSchema,
+	network: NetworkSchema,
+}).openapi('BlocksTipHashResponse');
+
+// ========================================
+// Phase 2 Response Schemas - Mempool Endpoints
+// ========================================
+
+export const MempoolRecentResponseSchema = z.object({
+	success: z.boolean().openapi({ example: true }),
+	transactions: z.array(z.any()),
+	count: z.number(),
+	network: NetworkSchema,
+}).openapi('MempoolRecentResponse');
+
+export const MempoolTxidsResponseSchema = z.object({
+	success: z.boolean().openapi({ example: true }),
+	txids: z.array(z.string()),
+	count: z.number(),
+	network: NetworkSchema,
+}).openapi('MempoolTxidsResponse');
+
+// ========================================
+// Phase 2 Response Schemas - Fee Endpoints
+// ========================================
+
+export const FeesCpfpResponseSchema = z.object({
+	success: z.boolean().openapi({ example: true }),
+	fees: z.any(),
+	network: NetworkSchema,
+}).openapi('FeesCpfpResponse');
+
+// ========================================
+// Phase 2 Response Schemas - Mining Endpoints
+// ========================================
+
+export const MiningPoolResponseSchema = z.object({
+	success: z.boolean().openapi({ example: true }),
+	slug: z.string(),
+	pool: z.any(),
+	network: NetworkSchema,
+}).openapi('MiningPoolResponse');
+
+export const MiningPoolHashrateResponseSchema = z.object({
+	success: z.boolean().openapi({ example: true }),
+	slug: z.string(),
+	hashrate: z.any(),
+	network: NetworkSchema,
+}).openapi('MiningPoolHashrateResponse');
+
+export const MiningPoolBlocksResponseSchema = z.object({
+	success: z.boolean().openapi({ example: true }),
+	slug: z.string(),
+	blocks: z.array(z.any()),
+	count: z.number(),
+	network: NetworkSchema,
+}).openapi('MiningPoolBlocksResponse');
+
+export const MiningHashrateResponseSchema = z.object({
+	success: z.boolean().openapi({ example: true }),
+	hashrate: z.any(),
+	network: NetworkSchema,
+}).openapi('MiningHashrateResponse');
+
+export const MiningDifficultyResponseSchema = z.object({
+	success: z.boolean().openapi({ example: true }),
+	difficulty: z.any(),
+	network: NetworkSchema,
+}).openapi('MiningDifficultyResponse');
+
+export const MiningBlockFeesResponseSchema = z.object({
+	success: z.boolean().openapi({ example: true }),
+	blockHeight: z.number(),
+	fees: z.any(),
+	network: NetworkSchema,
+}).openapi('MiningBlockFeesResponse');
+
+// ========================================
 // Request Parameter Schemas
 // ========================================
 
@@ -307,6 +510,49 @@ export const IntervalParamSchema = z.object({
 		example: 'next',
 	}),
 }).openapi('IntervalParam');
+
+// Phase 2 Parameter Schemas
+export const VoutParamSchema = z.object({
+	vout: z.coerce.number().int().nonnegative().openapi({
+		description: 'Transaction output index',
+		example: 0,
+	}),
+}).openapi('VoutParam');
+
+export const IndexParamSchema = z.object({
+	index: z.coerce.number().int().nonnegative().openapi({
+		description: 'Index position',
+		example: 0,
+	}),
+}).openapi('IndexParam');
+
+export const PrefixParamSchema = z.object({
+	prefix: z.string().openapi({
+		description: 'Address prefix to search',
+		example: 'tb1q',
+	}),
+}).openapi('PrefixParam');
+
+export const SlugParamSchema = z.object({
+	slug: z.string().openapi({
+		description: 'Mining pool slug',
+		example: 'foundryusa',
+	}),
+}).openapi('SlugParam');
+
+export const TimeperiodParamSchema = z.object({
+	timeperiod: z.string().openapi({
+		description: 'Time period (24h, 3d, 1w, 1m, 3m, 6m, 1y, 2y, 3y, all)',
+		example: '24h',
+	}),
+}).openapi('TimeperiodParam');
+
+export const StartHeightParamSchema = z.object({
+	startHeight: z.coerce.number().int().positive().openapi({
+		description: 'Starting block height',
+		example: 2500000,
+	}),
+}).openapi('StartHeightParam');
 
 // ========================================
 // Error Schemas
@@ -338,7 +584,7 @@ export const schemas = {
 	TxidSchema,
 	BlockHashSchema,
 
-	// Responses
+	// Phase 1 Responses
 	AddressInfoResponseSchema,
 	AddressTransactionsResponseSchema,
 	TransactionResponseSchema,
@@ -357,12 +603,57 @@ export const schemas = {
 	MempoolBlocksResponseSchema,
 	MiningPoolsResponseSchema,
 
-	// Requests
+	// Phase 2 Responses - Address
+	AddressTxsChainResponseSchema,
+	AddressTxsChainFromResponseSchema,
+	AddressPrefixResponseSchema,
+
+	// Phase 2 Responses - Transaction
+	TransactionMerkleProofResponseSchema,
+	TransactionMerkleblockProofResponseSchema,
+	TransactionOutspendSingleResponseSchema,
+	TransactionRawResponseSchema,
+	RecentTransactionsResponseSchema,
+
+	// Phase 2 Responses - Block
+	BlockHeaderResponseSchema,
+	BlockRawResponseSchema,
+	BlockStatusResponseSchema,
+	BlockTxByIndexResponseSchema,
+	BlockTxidsResponseSchema,
+	RecentBlocksResponseSchema,
+	BlocksFromHeightResponseSchema,
+	BlocksTipHashResponseSchema,
+
+	// Phase 2 Responses - Mempool
+	MempoolRecentResponseSchema,
+	MempoolTxidsResponseSchema,
+
+	// Phase 2 Responses - Fees
+	FeesCpfpResponseSchema,
+
+	// Phase 2 Responses - Mining
+	MiningPoolResponseSchema,
+	MiningPoolHashrateResponseSchema,
+	MiningPoolBlocksResponseSchema,
+	MiningHashrateResponseSchema,
+	MiningDifficultyResponseSchema,
+	MiningBlockFeesResponseSchema,
+
+	// Phase 1 Request Parameters
 	AddressParamSchema,
 	TxidParamSchema,
 	BlockHashParamSchema,
 	BlockHeightParamSchema,
 	IntervalParamSchema,
+
+	// Phase 2 Request Parameters
+	VoutParamSchema,
+	IndexParamSchema,
+	PrefixParamSchema,
+	SlugParamSchema,
+	TimeperiodParamSchema,
+	StartHeightParamSchema,
 
 	// Errors
 	ErrorResponseSchema,
