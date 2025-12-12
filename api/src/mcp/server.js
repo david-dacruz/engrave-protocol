@@ -226,7 +226,7 @@ class EngraveProtocolMCPServer {
                     },
                     {
                         name: 'query_mempool_fees',
-                        description: 'Get Bitcoin fee estimates for next block/1h/24h (x402 protected micropayment - $0.001 USDC)',
+                        description: 'Get Bitcoin fee estimates for next block/1h/24h (x402 protected micropayment - $0.01 USDC)',
                         inputSchema: {
                             type: 'object',
                             properties: {
@@ -240,7 +240,7 @@ class EngraveProtocolMCPServer {
                     },
                     {
                         name: 'query_mempool_stats',
-                        description: 'Get current mempool statistics (x402 protected micropayment - $0.001 USDC)',
+                        description: 'Get current mempool statistics (x402 protected micropayment - $0.01 USDC)',
                         inputSchema: {
                             type: 'object',
                             properties: {},
@@ -638,7 +638,7 @@ class EngraveProtocolMCPServer {
                             interval: interval,
                             fees: result.data,
                             payment: {
-                                amount: '$0.001 USDC',
+                                amount: '$0.01 USDC',
                                 method: 'x402',
                                 type: 'micropayment',
                                 status: 'settled',
@@ -687,7 +687,7 @@ class EngraveProtocolMCPServer {
                             success: true,
                             stats: result.data,
                             payment: {
-                                amount: '$0.001 USDC',
+                                amount: '$0.01 USDC',
                                 method: 'x402',
                                 type: 'micropayment',
                                 status: 'settled',
@@ -776,8 +776,8 @@ class EngraveProtocolMCPServer {
         console.log('  - query_mempool_transaction: Get transaction details (~$0.01 USDC)');
         console.log('  - query_mempool_tx_status: Get transaction status (~$0.01 USDC)');
         console.log('  - query_mempool_block: Get block information (~$0.01 USDC)');
-        console.log('  - query_mempool_fees: Get fee estimates ($0.001 USDC micropayment)');
-        console.log('  - query_mempool_stats: Get mempool statistics ($0.001 USDC micropayment)');
+        console.log('  - query_mempool_fees: Get fee estimates ($0.01 USDC micropayment)');
+        console.log('  - query_mempool_stats: Get mempool statistics ($0.01 USDC micropayment)');
         console.log('  - query_mempool_height: Get current block height (FREE)');
         console.log('');
         console.log('Payment method: x402 protocol via Solana wallet');
